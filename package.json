@@ -1,0 +1,39 @@
+{
+  "name": "jssmartcheck",
+  "version": "0.0.1",
+  "description": "Property based generative testing for JavaScript",
+  "files": ["dist"],
+  "main": "dist/jssmartcheck.js",
+  "scripts": {
+    "prepublish": "browserify src/jssmartcheck.js -o dist/jssmartcheck.js -t 6to5ify",
+    "test": "node_modules/.bin/mochify --watch --transform 6to5ify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mukeshsoni/jssmartcheck.git"
+  },
+  "keywords": [
+    "test",
+    "property",
+    "based",
+    "testing",
+    "javascript",
+    "testing",
+    "quickcheck"
+  ],
+  "author": "Mukesh Soni <mukeshsoni@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mukeshsoni/jssmartcheck/issues"
+  },
+  "homepage": "https://github.com/mukeshsoni/jssmartcheck",
+  "devDependencies": {
+    "6to5ify": "^4.1.0",
+    "chai": "^1.10.0",
+    "lodash": "~3.1.0",
+    "mochify": "^2.4.0"
+  },
+  "peerDependencies": {
+    "lodash": "~3.1.0"
+  }
+}
