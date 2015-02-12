@@ -21,8 +21,13 @@ generators.string = (size) => {
     return generators.arrayOf(generators.char)(size).join('');
 };
 
+/*
+ *	Numbers live here
+ */
 generators.int = () => {
 	return _.random(constants.MAX_INT * -1, constants.MAX_INT);
 };
+generators.int.positive = () => _.random(1, constants.MAX_INT);
+generators.int.between = (min, max) => _.random(min+1, max+1);
 
 module.exports = generators;
