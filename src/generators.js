@@ -5,17 +5,20 @@ var fun = () => true;
 var generators = {};
 
 /*
+ * array generators
+ */
+generators.arrayOf = (gen) => {
+    // yeah, unreadble, but fun :)
+    return size => _.range(_.random(0, size)).map(i => gen(i));
+}
+
+/*
  * String generators
  */ 
 generators.byte = () => Math.floor(Math.random() * 256);
 generators.char = () => String.fromCharCode(generators.byte());
 generators.string = (size) => {
-	var randomString = '';
-
-	for(var i in _.range(_.random(0, size))) {
-		randomString += generators.char();
-	}
-	return randomString;
+    return generators.arrayOf(generators.char)(size).join('');
 };
 
 generators.int = () => {
