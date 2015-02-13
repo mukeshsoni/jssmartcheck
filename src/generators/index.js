@@ -7,4 +7,8 @@ var numberGens = require('./number.js');
 
 var generators = _.extend({}, basicGens, arrayGens, stringGens, numberGens);
 
+generators.extend = function(obj) {
+	_.extend(this, obj);
+}
+
 module.exports = generators;
