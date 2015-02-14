@@ -14,4 +14,6 @@ describe('generators combined', function() {
 		expect(gen.cgen()).to.equal(2);
 		expect(gen.dgen()).to.equal(1);
 	});
+
+	
 });
