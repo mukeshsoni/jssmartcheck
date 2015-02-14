@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var generator = require('./index');
 
 var arrayGens = {};
 arrayGens.arrayOf = (gen) => {
@@ -6,4 +7,5 @@ arrayGens.arrayOf = (gen) => {
     return size => _.range(_.random(0, size)).map(i => gen(i));
 }
 
+generator.extend(arrayGens);
 module.exports = arrayGens;
