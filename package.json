@@ -8,7 +8,7 @@
   "main": "dist/jssmartcheck.js",
   "scripts": {
     "prepublish": "browserify src/jssmartcheck.js -o dist/jssmartcheck.js -t 6to5ify",
-    "test": "node_modules/.bin/mochify --watch --transform 6to5ify"
+    "test": "node_modules/.bin/mochify --watch --transform 6to5ify --reporter spec"
   },
   "repository": {
     "type": "git",

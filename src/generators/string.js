@@ -8,14 +8,14 @@ var basicGen = require('./basic.js');
 var arrayGen = require('./array.js');
 var generator = require('./index');
 
-var stringGens = {
+var stringGens = {};
+
+var regexOptions = {
     ignoreCase: false,
     multiline: false,
     regexRepetitionMax: 100 // max number of characters to generate for '*' like expressions
-};
+}
 
-stringGens.byte = () => Math.floor(Math.random() * 256);
-stringGens.char = () => String.fromCharCode(basicGen.byte());
 stringGens.string = (size) => {
     return arrayGen.arrayOf(basicGen.char)(size).join('');
 };
@@ -46,7 +46,18 @@ var getTokenRange = (token) => {
 
 var generateRandomValFromRange = (drange) => {
     var randomRange = _.random(0, drange.ranges.length - 1);
-    return String.fromCharCode(_.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high));
+    return getChar(_.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
+};
+
+var otherCase = (charIntVal) => {
+    if(97 <= charIntVal && charIntVal <= 122) return charIntVal - 32;
+    if(65 <= charIntVal && charIntVal <= 90) return charIntVal + 32;
+    return charIntVal;
+};
+
+var getChar = (charIntVal, ignoreCase=false) => {
+    var charCode = ignoreCase && !!_.random(0,1) ? otherCase(charIntVal) : charIntVal;
+    return String.fromCharCode(charCode);
 };
 
 var generateMatchingString = (token, groups) => {
@@ -55,8 +66,19 @@ var generateMatchingString = (token, groups) => {
     switch(token.type) {
         case types.ROOT:
         case types.GROUP:
-        // TODO - have to handle types.GROUP special cases and pipes. Current code is just for ROOT
-            let stack = token.stack ? token.stack : token.option;
+            if (token.notFollowedBy) return '';
+            // Insert placeholder until group string is generated.
+            if (token.remember && token.groupNumber === undefined) {
+                token.groupNumber = groups.push(null) - 1;
+            }
+
+            let stack = token.stack;
+
+            if(token.options) {
+                let randomIndex = _.random(0, token.options.length - 1);
+                stack = token.options[randomIndex];
+            }
+
             str = _.reduce(stack, (acc, stackItem) => {
                 return acc + generateMatchingString(stackItem, groups);
             }, '');
@@ -66,14 +88,18 @@ var generateMatchingString = (token, groups) => {
             }
 
             return str;
+        case types.POSITION:
+            // TODO
+            return '';
         case types.SET:
             var tokenRange = getTokenRange(token);
             return generateRandomValFromRange(tokenRange) || '';
         case types.RANGE:
             // don't know when this happens
+            return getChar(_.random(token.from, token.to), regexOptions.ignoreCase);
             break;
         case types.REPETITION:
-            var stringRandomLength = _.random(token.min, token.max === Infinity ? token.min + stringGens.regexRepetitionMax : token.max);
+            var stringRandomLength = _.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = '';
             for(let i in _.range(0, stringRandomLength)) {
@@ -84,7 +110,7 @@ var generateMatchingString = (token, groups) => {
         case types.REFERENCE:
             return groups[token.value-1] || '';
         case types.CHAR:
-            return String.fromCharCode(token.value);
+            return getChar(token.value, regexOptions.ignoreCase);
         default:
     }
 };
@@ -94,8 +120,8 @@ stringGens.string.matches = (pattern, options) => {
 
     var regexSource = pattern;
     if(_.isString(pattern)) {
-        if(_.contains(options, 'i')) stringGens.string.ignoreCase = true;
-        if(_.contains(options, 'm')) stringGens.string.multiline = true;
+        if(_.contains(options, 'i')) regexOptions.ignoreCase = true;
+        if(_.contains(options, 'm')) regexOptions.multiline = true;
     } else {
         stringGens.string.ignoreCase = pattern.ignoreCase;
         stringGens.string.multiline = pattern.multiline;
