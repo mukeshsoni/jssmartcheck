@@ -88,17 +88,17 @@ var generateMatchingString = (token, groups) => {
             }
 
             return str;
-        case types.POSITION:
+        case types.POSITION: // ^, $
             // TODO
             return '';
-        case types.SET:
+        case types.SET: // ., \d, \D, \w, \W, \s, \S
             var tokenRange = getTokenRange(token);
             return generateRandomValFromRange(tokenRange) || '';
         case types.RANGE:
             // don't know when this happens
             return getChar(_.random(token.from, token.to), regexOptions.ignoreCase);
             break;
-        case types.REPETITION:
+        case types.REPETITION: // *, {1, }, {2, 6}
             var stringRandomLength = _.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = '';
