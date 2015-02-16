@@ -1,5 +1,6 @@
 var gen = require('../src/generators/string');
 var _ = require('lodash');
+var utils = require('../src/utils');
 var expect = require('chai').expect;
 
 describe('string generators', () => {
@@ -25,6 +26,12 @@ describe('string generators', () => {
 
 			// atleast one generated string has size less than size
 			expect(_.some(generatedStrings, (string) => (string.length < size))).to.be.true;
+		});
+
+		it('should generate random ascii string', () => {
+			_.times(30, () => {
+				expect(utils.isAscii(gen.string.ascii(20))).to.be.true;
+			});
 		});
 	});
 

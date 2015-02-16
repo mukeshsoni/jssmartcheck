@@ -4,6 +4,7 @@ var ret = require('ret');
 var types = ret.types;
 var DRange = require('discontinuous-range');
 
+var utils = require('../utils');
 var basicGen = require('./basic.js');
 var arrayGen = require('./array.js');
 var generator = require('./index');
@@ -16,12 +17,18 @@ var regexOptions = {
     regexRepetitionMax: 100 // max number of characters to generate for '*' like expressions
 }
 
+var defaultRange = new DRange(32, 126);
+
 stringGens.string = (size) => {
     return arrayGen.arrayOf(basicGen.char)(size).join('');
 };
 
+stringGens.string.ascii = (size) => {
+    return arrayGen.arrayOf(basicGen.ascii)(size).join('');
+};
+
 var getTokenRange = (token) => {
-    var defaultRange = new DRange(32, 126);
+    
     switch(token.type) {
         case types.CHAR:
             return new DRange(token.value);
@@ -56,7 +63,7 @@ var otherCase = (charIntVal) => {
 };
 
 var getChar = (charIntVal, ignoreCase=false) => {
-    var charCode = ignoreCase && !!_.random(0,1) ? otherCase(charIntVal) : charIntVal;
+    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
     return String.fromCharCode(charCode);
 };
 
