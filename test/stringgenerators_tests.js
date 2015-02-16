@@ -46,6 +46,8 @@ describe('string generators', () => {
 		});
 
 		it('should throw if the regex is invalid', function() {
+			var regexes = [/[^\W\w]/, /[^\D\d]/, /[^\S\s]/, /[]/];
+			// console.log(gen.string.matches(regexes[0])());
 			// expect(() => gen.string.matches(/a^/)).to.throw(Error);
 			// console.log(gen.string.matches(/ab/)());
 		});
@@ -55,8 +57,8 @@ describe('string generators', () => {
 			runTests(regexes);
 		});
 
-		it('should work for \d, \w, \W, \D range generators', () => {
-			var regexes = [/ab\d/, /ab\d\w/, /ab\D\w/, /ab\d\W/, /ab\D\W/];
+		it('should work for \d, \w, \W, \D category generators', () => {
+			var regexes = [/ab\d/, /ab\d\w/, /ab\D\w/, /ab\d\W/, /ab\D\W/, /ab\sc/, /ab\Sc/];
 			runTests(regexes);
 		});
 
@@ -66,7 +68,7 @@ describe('string generators', () => {
 		});
 
 		it('should take care of repetition patterns', () => {
-			var regexes = [/ab*/, /ab[0-5]*/];
+			var regexes = [/ab*/, /ab[0-5]*/, /fe+d/, /\s{2,}/, /\d{2,4}/];
 			runTests(regexes);
 		});
 
@@ -75,8 +77,23 @@ describe('string generators', () => {
 			runTests(regexes);
 		});
 
-		it('should take care of pipes', function () {
+		it('should take care of pipes', () => {
 			var regexes = [/ab|cd/, /(ab|cd)/, /[0-5]|[a-f]/];
+			runTests(regexes);
+		});
+
+		it('should do negative lookahead. match x iff not followed by y', () => {
+			var regexes = [/^\d(?! years)/];
+			runTests(regexes);
+		});
+
+		it('should do positive lookahead. match x iff followed by y', () => {
+			var regexes = [/mukesh(?= soni)/];
+			runTests(regexes);
+		});
+
+		it('should match but not capture a group', () => {
+			var regexes = [/(?:.d){2}/];
 			runTests(regexes);
 		});
 	});
