@@ -1,16 +1,16 @@
 var _ = require('lodash');
-var constants = require('../constants');
 var generator = require('./index');
+var basic = require('./basic');
 
 var numberGen = {};
 
-numberGen.int = (size = constants.MAX_INT) => _.random(size * -1, size);
+numberGen.int = (size) => Math.floor(basic.random()*size);
 
-numberGen.int.positive = (size=constants.MAX_INT) => _.random(1, size);
+numberGen.int.positive = (size) => Math.abs(Math.floor(basic.random()*size));
 
-numberGen.int.between = (min, max) => _.random(min+1, max+1);
+numberGen.int.between = (min, max) => Math.floor(basic.random(min, max));
 
-numberGen.float = (size=constants.MAX_INT) => _.random(size * -1, size, true);
+numberGen.float = (size) => basic.random()*size;
 
 generator.extend(numberGen);
 module.exports = numberGen;
