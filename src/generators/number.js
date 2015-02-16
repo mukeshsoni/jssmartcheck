@@ -4,11 +4,13 @@ var generator = require('./index');
 
 var numberGen = {};
 
-numberGen.int = () => {
-	return _.random(constants.MAX_INT * -1, constants.MAX_INT);
-};
-numberGen.int.positive = () => _.random(1, constants.MAX_INT);
+numberGen.int = (size = constants.MAX_INT) => _.random(size * -1, size);
+
+numberGen.int.positive = (size=constants.MAX_INT) => _.random(1, size);
+
 numberGen.int.between = (min, max) => _.random(min+1, max+1);
+
+numberGen.float = (size=constants.MAX_INT) => _.random(size * -1, size, true);
 
 generator.extend(numberGen);
 module.exports = numberGen;

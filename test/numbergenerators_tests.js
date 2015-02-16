@@ -4,7 +4,10 @@ var expect = require('chai').expect;
 
 describe('integer generators', () => {
 	it('should generate random integers', () => {
-		_.times(10, () => expect(_.isNumber(gen.int())).to.be.true);
+		_.times(10, () => {
+			var n = gen.int();
+			expect(_.isNumber(n) && (Math.floor(n) === n)).to.be.true;
+		});
 	});
 
 	it('should generate a positive integer', () => {
