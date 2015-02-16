@@ -8,6 +8,7 @@ basicGens.byte = () => Math.floor(Math.random() * 256);
 basicGens.char = () => String.fromCharCode(basicGens.byte());
 basicGens.bool = () => !!_.random(0, 1);
 basicGens.ascii = () => String.fromCharCode(utils.choose(_.range(32,126)));
+basicGens.falsy = () => utils.choose([false, null, undefined, 0, "", NaN]);
 
 generator.extend(basicGens);
 

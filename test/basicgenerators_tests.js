@@ -8,7 +8,7 @@ describe('basic generators', () => {
         _.times(30, () => expect(gen.byte()).to.be.within(0, 255));
     });
     
-    it('generate a random character', function () {
+    it('generate a random character', () => {
         _.times(30, () => {
             var char = gen.char();
             expect(char).to.be.a('string');
@@ -16,11 +16,15 @@ describe('basic generators', () => {
         });
     });
 
-    it('should generate a boolean value', function () {
+    it('should generate a boolean value', () => {
         _.times(30, () => expect(gen.bool()).to.be.a('boolean'));
     });
 
-    it('should generate random ascii character', function () {
+    it('should generate random ascii character', () => {
         expect(utils.isAscii(gen.ascii())).to.be.true;
+    });
+
+    it('should generate a falsy value', () => {
+        _.times(30, () => expect(gen.falsy()).to.not.be.true);
     });
 });
