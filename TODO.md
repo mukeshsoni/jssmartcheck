@@ -1,4 +1,5 @@
 - [X] function generator
+    - [] The all but last parameters actually need to be type of argument. e.g. - fngen.fn(Integer, String, gen.number)
 - [X] object generator
 - [X] date generator
 - [] shrink
