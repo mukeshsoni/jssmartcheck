@@ -1,4 +1,5 @@
 - [X] function generator
 - [X] object generator
-= [X] date generator
+- [X] date generator
 - [] shrink
+= [] Documentation
