@@ -19,5 +19,4 @@ describe('generators combined', function() {
 	it('should contain our generators', function() {
 		_.times(10, () => expect(_.isNumber(gen.int())).to.be.true);
 	});
-	
 });

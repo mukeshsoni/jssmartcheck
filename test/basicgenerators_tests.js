@@ -21,10 +21,26 @@ describe('basic generators', () => {
     });
 
     it('should generate random ascii character', () => {
-        expect(utils.isAscii(gen.ascii())).to.be.true;
+        expect(utils.isAscii(gen.char.ascii())).to.be.true;
     });
 
     it('should generate a falsy value', () => {
         _.times(30, () => expect(gen.falsy()).to.not.be.true);
+    });
+
+    it('should generate a alpha character', () => {
+        var alphaChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        _.times(100, () => {
+            var randomAlphaChar = gen.char.alpha();
+            expect(alphaChars).to.contain(randomAlphaChar);
+        });
+    });
+
+    it('should generate a alpha-numeric character', () => {
+        var alphaNumChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        _.times(100, () => {
+            var randomAlphaChar = gen.char.alphaNum();
+            expect(alphaNumChars).to.contain(randomAlphaChar);
+        });
     });
 });

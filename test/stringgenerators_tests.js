@@ -33,11 +33,30 @@ describe('string generators', () => {
 				expect(utils.isAscii(gen.string.ascii(20))).to.be.true;
 			});
 		});
+
+		it('should generate random alpha string', () => {
+			var alphaNums = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+			var getAlphaChars = () => alphaNums.substr(0, 51);
+
+			_.times(30, () => {
+				let randomAlphaString = gen.string.alpha(20);
+				_.each(randomAlphaString, char => expect(getAlphaChars()).to.contain(char));
+			});
+		});
+
+		it('should generate random alpha numeric string', () => {
+			var alphaNums = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+			_.times(30, () => {
+				let randomAlphaString = gen.string.alphaNum(20);
+				_.each(randomAlphaString, char => expect(alphaNums).to.contain(char));
+			});
+		});
 	});
 
 	describe('generating random strings matching a pattern', function () {
-		function runTests(regexes) {
-			_.times(10, () => {
+		function runTests(regexes, iterations=10) {
+			_.times(iterations, () => {
 				regexes.forEach((regex) => {
 					expect(gen.string.matches(regex)()).to.have.match(regex);
 				});
@@ -76,7 +95,7 @@ describe('string generators', () => {
 
 		it('should take care of repetition patterns', () => {
 			var regexes = [/ab*/, /ab[0-5]*/, /fe+d/, /\s{2,}/, /\d{2,4}/];
-			runTests(regexes);
+			runTests(regexes, 2);
 		});
 
 		it('should take care of position patterns (^, $)', () => {

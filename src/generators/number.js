@@ -8,7 +8,7 @@ numberGen.int = (size) => Math.floor(basic.random()*size);
 
 numberGen.int.positive = (size) => Math.abs(Math.floor(basic.random()*size));
 
-numberGen.int.between = (min, max) => Math.floor(basic.random(min, max));
+numberGen.choose = numberGen.int.between = (min, max) => generator.elements(_.range(min, max))();
 
 numberGen.float = (size) => basic.random()*size;
 

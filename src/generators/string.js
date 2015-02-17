@@ -24,8 +24,14 @@ stringGens.string = (size) => {
 };
 
 stringGens.string.ascii = (size) => {
-    return arrayGen.arrayOf(basicGen.ascii)(size).join('');
+    return arrayGen.arrayOf(basicGen.char.ascii)(size).join('');
 };
+
+/*Generate a string of alphabets*/
+stringGens.string.alpha = (size) => arrayGen.arrayOf(basicGen.char.alpha)(size).join('');
+
+/*Generate a string of alpha numeric characters*/
+stringGens.string.alphaNum = (size) => arrayGen.arrayOf(basicGen.char.alphaNum)(size).join('');
 
 var getTokenRange = (token) => {
     
