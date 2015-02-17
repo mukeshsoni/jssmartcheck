@@ -1,4 +1,3 @@
-require("babel/polyfill");
 var _ = require('lodash');
 var generator = require('./index');
 var assert = require('assert');

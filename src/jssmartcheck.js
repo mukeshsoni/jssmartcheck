@@ -13,10 +13,10 @@ jssmartcheck.forAll = (...gens) => {
     return jssmartcheck;
 };
 
-jssmartcheck.check = (f) => {
+jssmartcheck.check = (f, times=100) => {
     assert(typeof f === 'function', 'check expects a property function');
 
-    for(let i = 0; i < 100; i++) {
+    for(let i = 0; i < times; i++) {
         jssmartcheck.forallGens.forEach((gen) => {
             var sampleValue = gen(i)
             assert(f(sampleValue) === true, 'failed for value: ' + sampleValue);
