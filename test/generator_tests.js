@@ -2,8 +2,8 @@ var gen = require('../src/generators');
 var expect = require('chai').expect;
 var _ = require('lodash');
 
-describe('generators combined', function() {
-	it('should allow adding custom generators', function() {
+describe('generators combined', () => {
+	it('should allow adding custom generators', () => {
 		function customGen() {
 			return 2;
 		}
@@ -16,7 +16,19 @@ describe('generators combined', function() {
 		expect(gen.dgen()).to.equal(1);
 	});
 
-	it('should contain our generators', function() {
+	it('should contain our generators', () => {
 		_.times(10, () => expect(_.isNumber(gen.int())).to.be.true);
+	});
+
+	it.only('should select generator based on frequency', () => {
+		expect(true).to.be.true;
+		var pairs = [[1, 'a'], [2, 'b'], [3, 'c']];
+
+		var results = [];
+		_.times(10, () => {
+			results.push(gen.frequency(pairs)());
+		});
+
+		console.log(results);
 	});
 });

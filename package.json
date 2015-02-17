@@ -32,7 +32,7 @@
   "devDependencies": {
     "6to5ify": "^4.1.0",
     "chai": "^1.10.0",
-    "lodash": "~3.1.0",
+    "lodash": "^3.2.0",
     "mochify": "^2.4.0",
     "phantomjs": "^1.9.15"
   },

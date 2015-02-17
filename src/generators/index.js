@@ -8,11 +8,25 @@ var elements = (items) => {
     return () => items[_.random(0, items.length-1)];
 }
 
+/*
+ * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
+ * pairs: [[2 gen.int] [3 gen.int.between(0, 100)] [1 gen.bool]]
+ */
+// TODO - need assertions for pairs passed
+var frequency = (pairs) => {
+    var gensSpread = _.reduce(pairs, (acc, pair) => {
+        return acc.concat(_.fill(new Array(pair[0]), pair[1]));
+    }, []);
+
+    return elements(gensSpread);
+};
+
 /*Picks a random generator from a list of generators*/
 var oneOf = (...gens) => elements(gens)();
 
 generators = {
     elements: elements,
+    frequency: frequency,
     oneOf: oneOf
 };
 

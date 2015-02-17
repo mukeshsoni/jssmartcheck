@@ -6,7 +6,6 @@ describe('Number generators', () => {
 	it('should generate random integers', () => {
 		_.times(10, () => {
 			var n = gen.int(_.random(0, 100));
-			console.log(n);
 			expect(_.isNumber(n) && (Math.floor(n) === n)).to.be.true;
 		});
 	});
