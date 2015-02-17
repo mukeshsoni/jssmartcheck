@@ -21,13 +21,24 @@ var frequency = (pairs) => {
     return elements(gensSpread);
 };
 
+var suchThat = (filterFn, gen) => {
+    return (size) => {
+        var generatedValue = gen(size)
+        while(filterFn(generatedValue) !== true) {
+            generatedValue = gen(size);
+        }
+        return generatedValue;
+    }
+};
+
 /*Picks a random generator from a list of generators*/
 var oneOf = (...gens) => elements(gens)();
 
 generators = {
     elements: elements,
     frequency: frequency,
-    oneOf: oneOf
+    oneOf: oneOf,
+    suchThat: suchThat
 };
 
 generators.extend = function(obj) {
