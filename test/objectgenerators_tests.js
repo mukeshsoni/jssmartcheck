@@ -39,8 +39,8 @@ describe('object generators', () => {
             var randomObj = gen.object.ofShape(shape)();
             expect(randomObj).to.have.property('details')
                                 .that.is.an('object');
-            expect(randomObj.details).to.have.property('age')
-                                .that.is.an('number');
+            expect(randomObj).to.have.deep.property('details.age')
+                                .that.is.a('number');
         });
     });
 });
