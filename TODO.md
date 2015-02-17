@@ -2,6 +2,7 @@
     - [] The all but last parameters actually need to be type of argument. e.g. - fngen.fn(Integer, String, gen.number)
 - [X] object generator
 - [X] date generator
+- [] For size=100, if we use a suchThat fn which says number > 1000, this fellow would be stuck in infinite loop
 - [] generator.fmap --> nothing but a map but for generators. e.g. mySpecialGen = generator.fmap((rval)=>rval.toString(), generator.int)
 - [] generator.suchThat -> applying filters on generators to get all kinds of customized generators
     - One implementation idea
