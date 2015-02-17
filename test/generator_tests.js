@@ -20,15 +20,15 @@ describe('generators combined', () => {
 		_.times(10, () => expect(_.isNumber(gen.int())).to.be.true);
 	});
 
-	it.only('should select generator based on frequency', () => {
-		expect(true).to.be.true;
-		var pairs = [[1, 'a'], [2, 'b'], [3, 'c']];
+	// it('should select generator based on frequency', () => {
+	// 	expect(true).to.be.true;
+	// 	var pairs = [[1, 'a'], [2, 'b'], [3, 'c']];
 
-		var results = [];
-		_.times(10, () => {
-			results.push(gen.frequency(pairs)());
-		});
+	// 	var results = [];
+	// 	_.times(10, () => {
+	// 		results.push(gen.frequency(pairs)());
+	// 	});
 
-		console.log(results);
-	});
+	// 	console.log(results);
+	// });
 });
