@@ -30,7 +30,7 @@ var any = () => {
 }
 
 // TODO
-var date = () => Math.floor(Math.random() * 256);
+var date = () => new Date(numberGen.uint.large());
 
 miscGens = {
     any: any,

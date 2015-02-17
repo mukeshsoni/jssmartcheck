@@ -12,6 +12,9 @@ numberGen.choose = numberGen.int.between = (min, max) => generator.elements(_.ra
 
 numberGen.float = (size) => basic.random()*size;
 
+numberGen.uint = (size) => true;
+numberGen.uint.large = () => Math.floor(Math.random() * Number.MAX_VALUE);
+
 generator.extend(numberGen);
 module.exports = numberGen;
 
