@@ -7,7 +7,6 @@ describe('Number generators', () => {
 	it('should generate random integers', () => {
 		_.times(testTimes, () => {
 			var n = gen.int(_.random(0, 100));
-			console.log('number: ', n);
 			expect(_.isNumber(n) && (Math.floor(n) === n)).to.be.true;
 		});
 	});
@@ -20,8 +19,8 @@ describe('Number generators', () => {
 		_.times(testTimes, () => {
 			var min = _.random(-10000, 9999),
 				max = _.random(min, 10000),
-				result = gen.int.between(min, max, _.random(0, 100));
-			expect(result).to.be.within(min+1, max+1);
+				result = gen.int.between(min, max)(_.random(0, 100));
+			expect(result).to.be.within(min, max);
 		});
 	});
 

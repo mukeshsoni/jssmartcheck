@@ -24,4 +24,5 @@ jssmartcheck.check = (f, times=100) => {
     }
 };
 
+
 module.exports = jssmartcheck;

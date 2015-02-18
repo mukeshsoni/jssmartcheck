@@ -14,7 +14,9 @@ numberGen.int = (size=100) => generator.elements([-1, 1])()*numberGen.intUpto(si
 numberGen.int.positive = (size=100) => numberGen.intUpto(size) + 1;
 
 /*Choose an integer in the range [min, max], both inclusive in search*/
-numberGen.int.choose = numberGen.int.between = (min, max) => generator.elements(_.range(min, max))();
+numberGen.int.choose = numberGen.int.between = (min, max) => {
+	return generator.elements(_.range(min, max+1));
+}
 
 /*Generate a float bounded by [-size, size]*/
 numberGen.float = (size=100) => basic.random()*size;
