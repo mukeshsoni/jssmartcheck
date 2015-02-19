@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var utils = require('../utils');
 var basicGen = require('./basic');
 var numberGen = require('./number');

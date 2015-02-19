@@ -1,5 +1,4 @@
 // gets all generators together into a single module
-var _ = require('lodash');
 var assert = require('assert');
 var utils = require('../utils');
 var stringGen = require('./string.js');
@@ -17,7 +16,7 @@ var miscGen = require('./misc.js');
 // TODO - need assertions for pairs passed
 var frequency = (pairs) => {
     var gensSpread = pairs.reduce( (acc, pair) => {
-        return acc.concat(_.fill(new Array(pair[0]), pair[1]));
+        return acc.concat(new Array(pair[0]).fill(pair[1]));
     }, []);
 
     return elements(gensSpread);

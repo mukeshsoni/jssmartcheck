@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var basic = require('./basic');
 var utils = require('../utils');
 

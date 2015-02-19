@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var assert = require('assert');
 var gen = require('./generators');
 

@@ -46,6 +46,27 @@ function last(array) {
 	return array[array.length-1];
 }
 
+//https://github.com/addyosmani/memoize.js
+function memoize(func) {
+    var stringifyJson = JSON.stringify,
+        cache = {};
+
+    var cachedfun = function() {
+        var hash = stringifyJson(arguments);
+        return (hash in cache) ? cache[hash] : cache[hash] = func.apply(this, arguments);
+    };
+
+    cachedfun.__cache = (function() {
+        cache.remove || (cache.remove = function() {
+            var hash = stringifyJson(arguments);
+            return (delete cache[hash]);
+        });
+        return cache;
+    }).call(this);
+
+    return cachedfun;
+}
+
 var utils = {
     choose: choose,
     isAscii: isAscii,
@@ -55,7 +76,8 @@ var utils = {
     isFunction : isFunction,
     isString : isString,
     extend : extend,
-    last : last
+    last : last,
+    memoize : memoize
 };
 
 module.exports = utils;

@@ -1,11 +1,10 @@
-var _ = require('lodash');
 var generator = require('./index');
 var utils = require('../utils');
 var fnGens = {};
 
 fnGens.fn = (...args) => {
     var returnGenerator = utils.last(args);
-    return _.memoize((size) => {
+    return utils.memoize((size) => {
         if(utils.isFunction(returnGenerator)) 
             return returnGenerator(size);
         return returnGenerator;
