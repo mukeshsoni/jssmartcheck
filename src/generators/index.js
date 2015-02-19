@@ -5,7 +5,7 @@ var generators = {};
 
 /*creates a Generator which returns a random element from a list (array in our case)*/
 var elements = (items) => {
-    return () => items[_.random(0, items.length-1)];
+    return () => items[utils.random(0, items.length-1)];
 }
 
 /*

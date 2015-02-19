@@ -58,8 +58,8 @@ var getTokenRange = (token) => {
 };
 
 var generateRandomValFromRange = (drange) => {
-    var randomRange = _.random(0, drange.ranges.length - 1);
-    return getChar(_.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
+    var randomRange = utils.random(0, drange.ranges.length - 1);
+    return getChar(utils.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
 };
 
 var otherCase = (charIntVal) => {
@@ -88,7 +88,7 @@ var generateMatchingString = (token, groups) => {
             let stack = token.stack;
 
             if(token.options) {
-                let randomIndex = _.random(0, token.options.length - 1);
+                let randomIndex = utils.random(0, token.options.length - 1);
                 stack = token.options[randomIndex];
             }
 
@@ -109,10 +109,10 @@ var generateMatchingString = (token, groups) => {
             return generateRandomValFromRange(tokenRange) || '';
         case types.RANGE:
             // don't know when this happens
-            return getChar(_.random(token.from, token.to), regexOptions.ignoreCase);
+            return getChar(utils.random(token.from, token.to), regexOptions.ignoreCase);
             break;
         case types.REPETITION: // *, {1, }, {2, 6}
-            var stringRandomLength = _.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
+            var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = '';
             for(let i in _.range(0, stringRandomLength)) {

@@ -29,7 +29,7 @@ basicGens.bool = () => generator.elements([true, false])();
 basicGens.falsy = () => generator.elements([false, null, undefined, 0, "", NaN])();
 
 /*Generate a random number between min and max (both inclusive)*/
-basicGens.random = (min=constants.MAX_INT * -1, max=constants.MAX_INT) => _.random(min, max, true);
+basicGens.random = (min=constants.MAX_INT * -1, max=constants.MAX_INT) => utils.random(min, max, true);
 
 /*Returns a generators which always generates the given val*/
 basicGens.value = val => () => val;
