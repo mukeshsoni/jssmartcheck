@@ -63,7 +63,7 @@ generators.extend = function(...obj) {
     if(typeof obj.join !== 'function') {
         obj = [obj];
     }
-    _.extend.apply(_, [generators].concat(obj));
+    utils.extend.apply(utils, [generators].concat(obj));
 }
 
 generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);

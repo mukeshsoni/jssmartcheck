@@ -1,4 +1,3 @@
-console.log('array.js');
 var _ = require('lodash');
 var utils = require('../utils');
 

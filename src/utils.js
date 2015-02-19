@@ -38,8 +38,8 @@ function isString(value) {
 	return !!(value.substring);
 }
 
-function extend(destination, source) {
-    return _extend(true, destination, source);
+function extend(...obj) {
+    return _extend.apply(_extend, [true].concat(obj));
 }
 
 function last(array) {
