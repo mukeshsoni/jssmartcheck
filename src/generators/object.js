@@ -1,5 +1,4 @@
 var _ = require('lodash');
-var generator = require('./index');
 var assert = require('assert');
 
 var objectGens = {};
@@ -30,5 +29,4 @@ objectGens.object.ofShape = (shape) => {
     return generateObjectOfShape.bind(this, shape);
 };
 
-generator.extend(objectGens);
 module.exports = objectGens;

@@ -2,12 +2,13 @@
 var _ = require('lodash');
 var assert = require('assert');
 var utils = require('../utils');
-var generators = {};
-
-/*creates a Generator which returns a random element from a list (array in our case)*/
-var elements = (items) => {
-    return () => items[utils.random(0, items.length-1)];
-}
+var stringGen = require('./string.js');
+var numberGen = require('./number.js');
+var arrayGen = require('./array.js');
+var basicGen = require('./basic.js');
+var functionGen = require('./function.js');
+var objectGen = require('./object.js');
+var miscGen = require('./misc.js');
 
 /*
  * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
@@ -42,15 +43,28 @@ var suchThat = (filterFn, gen, maxIterations=10) => {
 /*Picks a random generator from a list of generators*/
 var oneOf = (...gens) => elements(gens)();
 
-generators = {
-    elements: elements,
-    frequency: frequency,
-    oneOf: oneOf,
-    suchThat: suchThat
+var sample = (gen, times=100) => {
+    var results = [];
+    for(var i = 0; i < times; i++) {
+        results.push(gen(i));
+    }
+
+    return results;
 };
 
-generators.extend = function(obj) {
-	_.extend(generators, obj);
+var generators = {
+    frequency: frequency,
+    oneOf: oneOf,
+    suchThat: suchThat,
+    sample: sample
+};
+
+generators.extend = function(...obj) {
+    if(typeof obj.join !== 'function') {
+        obj = [obj];
+    }
+    _.extend.apply(_, [generators].concat(obj));
 }
 
+generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);
 module.exports = generators;

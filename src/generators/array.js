@@ -1,5 +1,5 @@
+console.log('array.js');
 var _ = require('lodash');
-var generator = require('./index');
 var utils = require('../utils');
 
 var arrayGens = {};
@@ -8,5 +8,4 @@ arrayGens.arrayOf = (gen) => {
     return size => utils.range(utils.random(0, size)).map(i => gen(i));
 }
 
-generator.extend(arrayGens);
 module.exports = arrayGens;

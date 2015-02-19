@@ -3,7 +3,6 @@ var utils = require('../utils');
 var basicGen = require('./basic');
 var numberGen = require('./number');
 var stringGen = require('./string');
-var generator = require('./index');
 
 var miscGens = {};
 
@@ -36,7 +35,5 @@ miscGens = {
     any: any,
     date: date
 };
-
-generator.extend(miscGens);
 
 module.exports = miscGens;

@@ -7,7 +7,6 @@ var DRange = require('discontinuous-range');
 var utils = require('../utils');
 var basicGen = require('./basic.js');
 var arrayGen = require('./array.js');
-var generator = require('./index');
 
 var stringGens = {};
 
@@ -147,5 +146,4 @@ stringGens.string.matches = (pattern, options) => {
     }
 };
 
-generator.extend(stringGens);
 module.exports = stringGens;

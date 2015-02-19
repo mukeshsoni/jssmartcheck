@@ -12,5 +12,4 @@ fnGens.fn = (...args) => {
 };
 
 fnGens.fun = fnGens.function = fnGens.fn;
-
 module.exports = fnGens;

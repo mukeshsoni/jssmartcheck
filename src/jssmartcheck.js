@@ -18,7 +18,7 @@ jssmartcheck.check = (f, times=100) => {
 
     for(let i = 0; i < times; i++) {
         jssmartcheck.forallGens.forEach((gen) => {
-            var sampleValue = gen(i)
+            var sampleValue = gen(i);
             assert(f(sampleValue) === true, 'failed for value: ' + sampleValue);
         });
     }
