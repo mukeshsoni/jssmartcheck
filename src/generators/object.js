@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var assert = require('assert');
+var utils = require('../utils');
 
 var objectGens = {};
 objectGens.object = {};
@@ -11,7 +12,7 @@ function generateObjectOfShape(shape) {
         if (shape.hasOwnProperty(prop)) {
             if(typeof shape[prop] === 'function') {
                 result[prop] = shape[prop](size);
-            } else if(_.isObject(shape[prop])) {
+            } else if(utils.isObject(shape[prop])) {
                 result[prop] = generateObjectOfShape(shape[prop]);
             } else {
                 result[prop] = shape[prop];
@@ -24,7 +25,7 @@ function generateObjectOfShape(shape) {
 
 /*Generateo an object of given shape*/
 objectGens.object.ofShape = (shape) => {
-    assert(_.isObject(shape), 'Need an argument of Object type');
+    assert(utils.isObject(shape), 'Need an argument of Object type');
 
     return generateObjectOfShape.bind(this, shape);
 };

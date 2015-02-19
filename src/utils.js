@@ -19,18 +19,23 @@ function random(min, max, isFloat) {
 }
 
 // generate a range of values (array)
-// inspired by the awesome Ariya - http://ariya.ofilabs.com/2013/07/sequences-using-javascript-array.html
 function range(min, max) {
 	var lowLimit = max ? min : 0,
 		upLimit = max ? max : min;
 	return Array.apply(0, Array(upLimit - lowLimit)).map(function (x, y) { return y + lowLimit; });
 }
 
+function isObject(value) {
+  var type = typeof value;
+  return type == 'function' || (value && type == 'object') || false;
+}
+
 var utils = {
     choose: choose,
     isAscii: isAscii,
     random : random,
-    range : range
+    range : range,
+    isObject : isObject
 };
 
 module.exports = utils;
