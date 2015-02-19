@@ -13,8 +13,9 @@ function isAscii(str) {
 function _getRandomNumber(min, max) {
   return Math.random() * (max - min) + min;
 }
+
 function random(min, max, isFloat) {
-	return isFloat ? _getRandomNumber(min, max) : Math.floor(_getRandomNumber(min, max));
+	return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
 }
 
 // generate a range of values (array)
