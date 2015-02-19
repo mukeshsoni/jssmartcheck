@@ -1,5 +1,6 @@
 // gets all generators together into a single module
 var _ = require('lodash');
+var assert = require('assert');
 var utils = require('../utils');
 var generators = {};
 
@@ -21,12 +22,19 @@ var frequency = (pairs) => {
     return elements(gensSpread);
 };
 
-var suchThat = (filterFn, gen) => {
+var suchThat = (filterFn, gen, maxIterations=10) => {
     return (size) => {
         var generatedValue = gen(size)
-        while(filterFn(generatedValue) !== true) {
+        var iterationCount = 0;
+        while(filterFn(generatedValue) !== true && iterationCount < maxIterations) {
             generatedValue = gen(size);
+            iterationCount += 1;
+            size += 1;
         }
+
+
+        assert(filterFn(generatedValue), `could not a generate value as per filter function after ${maxIterations}`);
+
         return generatedValue;
     }
 };

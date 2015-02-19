@@ -44,6 +44,14 @@ describe('generators combined', () => {
 		});
 	});
 	
+	it('should throw if suchThat can\'t produce a proper value', function () {
+		var myPositiveIntGenerator = gen.suchThat(_.isString, numberGen.int); // crazy idea to think integer is a string! HEHEHEHE
+		var size = 20;
+		_.times(10, () => {
+			expect(() => myPositiveIntGenerator(size)).to.throw(Error);
+		});
+	});
+
 	// it('should select generator based on frequency', () => {
 	// 	expect(true).to.be.true;
 	// 	var pairs = [[1, 'a'], [2, 'b'], [3, 'c']];
