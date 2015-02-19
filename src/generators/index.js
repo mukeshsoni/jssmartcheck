@@ -16,7 +16,7 @@ var miscGen = require('./misc.js');
  */
 // TODO - need assertions for pairs passed
 var frequency = (pairs) => {
-    var gensSpread = _.reduce(pairs, (acc, pair) => {
+    var gensSpread = pairs.reduce( (acc, pair) => {
         return acc.concat(_.fill(new Array(pair[0]), pair[1]));
     }, []);
 

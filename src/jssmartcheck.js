@@ -7,7 +7,7 @@ var jssmartcheck = {
 };
 
 jssmartcheck.forAll = (...gens) => {
-    assert(_.all(gens, gen => typeof gen === 'function'), 'Expect all generators to be function references');
+    assert(gens.every( gen => typeof gen === 'function'), 'Expect all generators to be function references');
 
     jssmartcheck.forallGens = gens;
     return jssmartcheck;

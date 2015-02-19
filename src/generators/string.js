@@ -91,7 +91,7 @@ var generateMatchingString = (token, groups) => {
                 stack = token.options[randomIndex];
             }
 
-            str = _.reduce(stack, (acc, stackItem) => {
+            str = stack.reduce((acc, stackItem) => {
                 return acc + generateMatchingString(stackItem, groups);
             }, '');
 
@@ -128,12 +128,12 @@ var generateMatchingString = (token, groups) => {
 };
 
 stringGens.string.matches = (pattern, options) => {
-    assert(_.isString(pattern) || pattern instanceof RegExp, 'Expect a RegExp object or regular expression string as input');
+    assert(utils.isString(pattern) || pattern instanceof RegExp, 'Expect a RegExp object or regular expression string as input');
 
     var regexSource = pattern;
-    if(_.isString(pattern)) {
-        if(_.contains(options, 'i')) regexOptions.ignoreCase = true;
-        if(_.contains(options, 'm')) regexOptions.multiline = true;
+    if(utils.isString(pattern)) {
+        if(options && options['i']) regexOptions.ignoreCase = true;
+        if(options && options['m']) regexOptions.multiline = true;
     } else {
         stringGens.string.ignoreCase = pattern.ignoreCase;
         stringGens.string.multiline = pattern.multiline;

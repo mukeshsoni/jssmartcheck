@@ -1,4 +1,4 @@
-var _ = require('lodash');
+var _extend = require('extend');
 
 function choose(elements) {
     return elements[random(0, elements.length-1)];
@@ -30,12 +30,32 @@ function isObject(value) {
   return type == 'function' || (value && type == 'object') || false;
 }
 
+function isFunction(value) {
+  return typeof value == 'function' || false;
+}
+
+function isString(value) {
+	return !!(value.substring);
+}
+
+function extend(destination, source) {
+    return _extend(true, destination, source);
+}
+
+function last(array) {
+	return array[array.length-1];
+}
+
 var utils = {
     choose: choose,
     isAscii: isAscii,
     random : random,
     range : range,
-    isObject : isObject
+    isObject : isObject,
+    isFunction : isFunction,
+    isString : isString,
+    extend : extend,
+    last : last
 };
 
 module.exports = utils;
