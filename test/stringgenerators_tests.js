@@ -20,7 +20,7 @@ describe('string generators', () => {
 		// this test can actually fail some times (once in a million or so)
 		it('should generate some strings of length less than size in 100 iterations', () => {
 			var size = Math.round(Math.random()*1000);
-			var generatedStrings = _.map(_.range(100), () => {
+			var generatedStrings = _.map(utils.range(100), () => {
 				return gen.string(size);
 			});
 

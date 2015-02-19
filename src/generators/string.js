@@ -115,7 +115,7 @@ var generateMatchingString = (token, groups) => {
             var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = '';
-            for(let i in _.range(0, stringRandomLength)) {
+            for(let i in utils.range(0, stringRandomLength)) {
                 str += generateMatchingString(token.value, groups);
             }
 

@@ -20,7 +20,7 @@ basicGens.char.alpha = () => generator.elements(getAlphaChars())();
 basicGens.char.alphaNum = () => generator.elements(alphaNums)();
 
 /*Generate a random ascii character*/
-basicGens.char.ascii = () => String.fromCharCode(generator.elements(_.range(32,126))());
+basicGens.char.ascii = () => String.fromCharCode(generator.elements(utils.range(32,126))());
 
 /*Generate a random boolean (true or false)*/
 basicGens.bool = () => generator.elements([true, false])();

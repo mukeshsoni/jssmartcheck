@@ -9,18 +9,27 @@ function isAscii(str) {
 }
 
 
+// generate a random number between min and max.
 function _getRandomNumber(min, max) {
   return Math.random() * (max - min) + min;
 }
-// generate a random number between min and max. 
 function random(min, max, isFloat) {
 	return isFloat ? _getRandomNumber(min, max) : Math.floor(_getRandomNumber(min, max));
+}
+
+// generate a range of values (array)
+// inspired by the awesome Ariya - http://ariya.ofilabs.com/2013/07/sequences-using-javascript-array.html
+function range(min, max) {
+	var lowLimit = max ? min : 0,
+		upLimit = max ? max : min;
+	return Array.apply(0, Array(upLimit - lowLimit)).map(function (x, y) { return y + lowLimit; });
 }
 
 var utils = {
     choose: choose,
     isAscii: isAscii,
-    random : random
+    random : random,
+    range : range
 };
 
 module.exports = utils;

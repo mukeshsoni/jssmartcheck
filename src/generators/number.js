@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var generator = require('./index');
 var basic = require('./basic');
+var utils = require('../utils');
 
 var numberGen = {};
 
@@ -15,7 +16,7 @@ numberGen.int.positive = (size=100) => numberGen.intUpto(size) + 1;
 
 /*Choose an integer in the range [min, max], both inclusive in search*/
 numberGen.int.choose = numberGen.int.between = (min, max) => {
-	return generator.elements(_.range(min, max+1));
+	return generator.elements(utils.range(min, max+1));
 }
 
 /*Generate a float bounded by [-size, size]*/
