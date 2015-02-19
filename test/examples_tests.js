@@ -20,4 +20,10 @@ describe('basic ones', function () {
 		console.log(gen.string(3));
 		console.log(gen.string.matches(/abc/)());
 	});
+
+	it('string concatenation', function() {
+		jsc.forAll(gen.string).check((a) => {
+			return ((a.concat("eureka!")).length === a.length+7) ;
+		});
+	});
 });
