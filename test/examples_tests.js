@@ -13,7 +13,7 @@ describe('examples', function () {
 	// describe('complex ones', function () {
 		
 	// });
-	
+
 	it('blah', function () {
 		console.log(gen.object.ofShape({
 			name: gen.string.matches(/Mr\.\s[A-Z]{2,7}(\s[A-Z]{3,8})?/)
@@ -30,7 +30,7 @@ describe('examples', function () {
 
 	it('string concatenation', function() {
 		var test = jsc.forAll(gen.string, gen.string).check((a, b) => {
-			return (a.concat("eureka!").length + b.concat("more eureka!").length === a.length+7+b.length+11) ;
+			return (a.concat("eureka!").length + b.concat("more eureka!").length === a.length+7+b.length+12) ;
 		});
 
 		// expect(test).to.pass;
