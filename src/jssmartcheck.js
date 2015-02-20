@@ -12,14 +12,16 @@ jssmartcheck.forAll = (...gens) => {
     return jssmartcheck;
 };
 
-jssmartcheck.check = (f, times=100) => {
+jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
+    jssmartcheck.seed = seed;
     assert(typeof f === 'function', 'check expects a property function');
 
     for(let i = 0; i < times; i++) {
-        jssmartcheck.forallGens.forEach((gen) => {
-            var sampleValue = gen(i);
-            assert(f(sampleValue) === true, 'failed for value: ' + sampleValue);
+        var sampleValues = jssmartcheck.forallGens.map((gen, index) => {
+            return gen(i);
         });
+
+        assert(f.apply(undefined, sampleValues) === true, {msg: 'failed for value: ' + sampleValues});
     }
 };
 
