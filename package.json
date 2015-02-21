@@ -2,13 +2,13 @@
   "name": "jssmartcheck",
   "version": "0.0.1",
   "description": "Property based generative testing for JavaScript",
-  "files": [
-    "dist"
-  ],
-  "main": "dist/jssmartcheck.js",
+  "main": "src/jssmartcheck.js",
   "scripts": {
-    "prepublish": "browserify src/jssmartcheck.js -o dist/jssmartcheck.js -t babelify",
+    "prepublish": "mkdir -p dist && browserify src/jssmartcheck.js -o dist/jssmartcheck.js -t babelify",
     "test": "node_modules/.bin/mochify --watch --transform babelify --reporter spec"
+  },
+  "browserify": {
+    "transform": "babelify"
   },
   "repository": {
     "type": "git",

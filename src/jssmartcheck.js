@@ -1,3 +1,4 @@
+require("babel/polyfill");
 var assert = require('assert');
 var gen = require('./generators');
 
@@ -24,6 +25,5 @@ jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
         assert(f.apply(undefined, sampleValues) === true, {msg: 'failed for value: ' + sampleValues});
     }
 };
-
 
 module.exports = jssmartcheck;
