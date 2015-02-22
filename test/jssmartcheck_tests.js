@@ -30,4 +30,14 @@ describe('the main module', function() {
         expect(() => jsc.forAll(gen.int).check(propFunc1)).to.not.throw();
         expect(() => jsc.forAll(gen.int).check(propFunc2)).to.throw(Error);
     });
+
+    it('should show proper error message for failing cases', function() {
+        var gen = jsc.gen;
+        // expect(true).to.be.false;
+        // a function which fails for some integer a
+        var propFunc2 = (a) => {
+            return a.length < 10;
+        };
+        jsc.forAll(gen.arrayOf(gen.int)).check(propFunc2);
+    });
 });

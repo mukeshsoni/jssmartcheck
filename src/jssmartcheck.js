@@ -13,6 +13,14 @@ jssmartcheck.forAll = (...gens) => {
     return jssmartcheck;
 };
 
+var getErrorMessage = (numTests, fail) => {
+    return JSON.stringify({
+        result: false,
+        numTests,
+        fail
+    });
+};
+
 jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
     jssmartcheck.seed = seed;
     assert(typeof f === 'function', 'check expects a property function');
@@ -22,8 +30,14 @@ jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
             return gen(i);
         });
 
-        assert(f.apply(undefined, sampleValues) === true, {msg: 'failed for value: ' + sampleValues});
+        assert(f.apply(undefined, sampleValues) === true, getErrorMessage(i, sampleValues));
     }
+
+    console.log({ result: true, numTests: times, seed: seed });
 };
+
+jssmartcheck.test = () => {
+    assert(true === false, "true is not equal to false");
+}
 
 module.exports = jssmartcheck;
