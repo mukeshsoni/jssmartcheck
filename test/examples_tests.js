@@ -35,4 +35,10 @@ describe('examples', function () {
 
 		// expect(test).to.pass;
 	});
+
+	it('any number other than 5', function() {
+		jsc.forAll(gen.suchThat(function(n) {
+			return n!=5;
+		}, gen.int)).check((n) => {return n!=5});
+	});
 });
