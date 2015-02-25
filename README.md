@@ -107,5 +107,125 @@ gen.sample(gen.object.ofShape({
 */
 ```
 
-### Detailed Documentation of all Generators
-> This section is still being worked upon. In the meanwhile, please check the files or the tests to get an idea of the supported generators
+## Detailed Documentation of all Generators
+### Number generators
+**integers** - gen.int
+
+```
+var gen = require('jssmartcheck').gen;
+
+// generate 10 random integers
+gen.sample(gen.int, 10); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+
+```
+
+**positive integers** - gen.int.positive
+```
+var gen = require('jssmartcheck').gen;
+
+// generate 10 random positive integers
+gen.sample(gen.int.positive, 10); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+```
+
+**integer in a range** - gen.int.between
+```
+
+var gen = require('jssmartcheck').gen;
+
+// generate 10 integer in the range [min, max] (both inclusive)
+gen.sample(gen.int.between(10, 100), 10); // [ 55, 31, 10, 75, 84, 19, 59, 34, 86, 12]
+```
+
+**floating point number** - gen.float
+```
+
+var gen = require('jssmartcheck').gen;
+
+// generate 10 floating point numbers
+gen.sample(gen.float, 10); 
+
+/* 
+    [ 
+        0,
+        -9263.793444260955,
+        1457.7880781143904,
+        -23325.45812241733,
+        -27032.062970101833,
+        -22139.405994676054,
+        53050.33131502569,
+        30739.869456738234,
+        25103.324092924595,
+        65394.96577810496 
+    ]
+*/
+```
+
+**large integer** - gen.int.large
+```
+
+var gen = require('jssmartcheck').gen;
+
+// generate 10 large integers
+gen.sample(gen.int.large, 10); 
+
+/*
+    [ 
+        1.7942217500110602e+308,
+        2.9093457718352433e+306,
+        3.6593154190409177e+307,
+        8.085731107763065e+306,
+        9.616694531726025e+307,
+        1.1036431189239296e+308,
+        1.7337810355081831e+308,
+        1.7816857602101413e+308,
+        6.798105794239869e+307,
+        4.032906283193464e+307 
+    ]
+*/
+```
+
+**unsigned integer** - gen.uint
+```
+
+var gen = require('jssmartcheck').gen;
+
+// generate 10 unsigned integers
+gen.sample(gen.uint, 10);  //[ 0, 0, 3, 6, 14, 18, 23, 10, 21, 11 ]
+```
+
+### String generators
+
+**strings** - gen.string
+
+```
+var gen = require('jssmartcheck').gen;
+
+// generate 10 strings
+gen.sample(gen.string, 10); 
+
+/*
+    [ 
+        '',
+        '',
+        '',
+        'ð',
+        'K',
+        '[²Wg',
+        '\u0001çä',
+        '"qt',
+        'jK\u001c]ô',
+        '²Ý»¼¶\tG' 
+    ]
+*/
+```
+
+### Array generators
+
+**array** - gen.arrayOf
+
+```
+var gen = require('jssmartcheck').gen;
+
+// generate an array of integers
+gen.sample(gen.arrayOf(gen.int), 1); // [ [0, 4, 2, 6] ]
+```
