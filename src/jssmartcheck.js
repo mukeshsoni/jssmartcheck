@@ -2,9 +2,7 @@ require("babel/polyfill");
 var assert = require('assert');
 var gen = require('./generators');
 
-var jssmartcheck = {
-    gen: gen
-};
+var jssmartcheck = { gen };
 
 jssmartcheck.forAll = (...gens) => {
     assert(gens.every( gen => typeof gen === 'function'), 'Expect all generators to be function references');
@@ -35,9 +33,5 @@ jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
 
     console.log({ result: true, numTests: times, seed: seed });
 };
-
-jssmartcheck.test = () => {
-    assert(true === false, "true is not equal to false");
-}
 
 module.exports = jssmartcheck;

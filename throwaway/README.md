@@ -9,7 +9,7 @@ Another difference from traditional unit testing is that instead of giving the t
 # How to Use
 ---
 ```
-$ npm install jssmartcheck
+$ npm install git+https://git@github.com/mukeshsoni/jssmartcheck.git
 ```
 
 In your test file - 
