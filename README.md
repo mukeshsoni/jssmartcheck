@@ -1,5 +1,4 @@
 # jssmartcheck
----
 jssmartcheck is a JavaScript property-based testing tool inspired by Haskell's [QuickCheck](https://wiki.haskell.org/Introduction_to_QuickCheck1) and Clojure's [test.check](https://github.com/clojure/test.check).
 
 Property based testing is also known as generator based testing or generative testing. The principle behind property based testing is that it's really hard to create random testing data which covers all edge cases. But if we let the machine do the generation of test data for us, we could catch many more errors than otherwise. The generation of data by machine also lets us run our test on much more data than using manual methods.
@@ -7,7 +6,6 @@ Property based testing is also known as generator based testing or generative te
 Another difference from traditional unit testing is that instead of giving the tests an 'expected output', we need to specify a property of the function which holds true for a given 'set' of input. This makes us think harder about the way we write functions, a welcome side effect.
 
 # How to Use
----
 ```
 $ npm install git+https://git@github.com/mukeshsoni/jssmartcheck.git
 ```
@@ -51,7 +49,6 @@ Also as seen in the failing test case, one can easily compose new generators out
 jssmartcheck works out of the box for [mochajs](http://mochajs.org/). Should also work with jasmine and qunit but have not been tested yet.
 
 # Documentation
----
 
 ## Generators
 Generators help you generate random values of a specific type against which the property function is run. *jssmartcheck* provides a number of generators to get you started. You can also compose your own generators using the existing ones. Or roll up your own. They are just functions.
