@@ -41,4 +41,11 @@ describe('examples', function () {
 			return n!=5;
 		}, gen.int)).check((n) => {return n!=5});
 	});
+
+	// this must fail for the value '1'
+	it('Number divided by itself ', function() {
+		jsc.forAll(gen.int).check((a) => {
+			return (a-1)/(a-1) === 1;
+		});
+	});
 });
