@@ -38,6 +38,6 @@ describe('the main module', function() {
         var propFunc2 = (a) => {
             return a.length < 10;
         };
-        jsc.forAll(gen.arrayOf(gen.int)).check(propFunc2);
+        expect(() => jsc.forAll(gen.arrayOf(gen.int)).check(propFunc2)).to.throw(Error);
     });
 });
