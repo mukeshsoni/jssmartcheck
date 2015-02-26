@@ -23,3 +23,6 @@
 - [ ] shrink
 - [ ] browserify on prepublish will give error because 'dist' is not there
 - [ ] need to include an 'exclude' list for browserify. or else the output lib is 12k+ lines of code!
+- [ ] write proper implementation of gen.any
+- [ ] write gen.any.simple
+- [ ] write implementation for gen.object
