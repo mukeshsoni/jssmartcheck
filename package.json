@@ -4,7 +4,7 @@
   "description": "Property based generative testing for JavaScript",
   "main": "./dist/jssmartcheck.js",
   "scripts": {
-    "prepublish": "mkdir -p dist && node_modules/.bin/babel -d dist src",
+    "prepublish": "mkdir -p dist && browserify src/jssmartcheck.js -t babelify -s jssmartcheck > dist/jssmartcheck.js",
     "test": "node_modules/.bin/mochify --watch --transform babelify --reporter spec"
   },
   "repository": {
