@@ -11,7 +11,7 @@ var miscGen = require('./misc.js');
 
 /*
  * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
- * pairs: [[2 gen.int] [3 gen.int.between(0, 100)] [1 gen.bool]]
+ * pairs: [[2 gen.int], [3 gen.int.between(0, 100)], [1 gen.bool]]
  */
 // TODO - need assertions for pairs passed
 var frequency = (pairs) => {
@@ -19,7 +19,7 @@ var frequency = (pairs) => {
         return acc.concat(new Array(pair[0]).fill(pair[1]));
     }, []);
 
-    return elements(gensSpread);
+    return basicGen.elements(gensSpread)();
 };
 
 var suchThat = (filterFn, gen, maxIterations=10) => {
@@ -40,7 +40,7 @@ var suchThat = (filterFn, gen, maxIterations=10) => {
 };
 
 /*Picks a random generator from a list of generators*/
-var oneOf = (...gens) => elements(gens)();
+var oneOf = (...gens) => basicGen.elements(gens)();
 
 var sample = (gen, times=100) => {
     var results = [];
