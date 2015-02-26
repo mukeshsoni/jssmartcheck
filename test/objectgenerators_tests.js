@@ -5,7 +5,15 @@ var _ = require('lodash');
 var expect = require('chai').expect;
 
 describe('object generators', () => {
-    describe('object of particular shape', function () {
+    describe('object of any shape', () => {
+        it('should generate object of random shape', () => {
+            _.times(100, () => {
+                expect(gen.object()).to.be.an('object');
+            })
+        });    
+    });
+
+    describe('object of particular shape', () => {
         it('should throw if not passed an object as argument', () => {
             expect(()=>gen.object.ofShape()).to.throw(Error);
             expect(()=>gen.object.ofShape('hello')).to.throw(Error);

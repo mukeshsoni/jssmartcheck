@@ -3,7 +3,6 @@ var utils = require('../utils');
 var basicGen = require('./basic');
 var numberGen = require('./number');
 var stringGen = require('./string');
-var objectGen = require('./object.js');
 
 var miscGens = {};
 
@@ -41,6 +40,8 @@ miscGens.frequency = (pairs) => {
 };
 
 miscGens.any = () => {
+    var objectGen = require('./object.js');
+
     var gensWithWeights = [
         [4, numberGen.int],
         [4, numberGen.int.positive],

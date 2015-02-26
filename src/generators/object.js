@@ -1,8 +1,29 @@
 var assert = require('assert');
 var utils = require('../utils');
+var basicGen = require('./basic.js');
+var numberGen = require('./number.js');
+var stringGen = require('./string.js');
+var miscGen = require('./misc.js');
 
 var objectGens = {};
-objectGens.object = {};
+
+// generate a random object.
+objectGens.object = () => {
+    var maxProps = 10;
+    var numProps = utils.random(1, maxProps);
+    var maxKeyLength = 10;
+    var keyGenerator = miscGen.suchThat((str) => str.length > 0, stringGen.string);
+    var valSizeMax = 20;
+    var resultObject = {};
+
+    for(let i = 0; i < numProps; i++) {
+        let key = keyGenerator(maxKeyLength);
+        let val = miscGen.any(valSizeMax);
+        resultObject[key] = val;
+    }
+
+    return resultObject;
+};
 
 function generateObjectOfShape(shape) {
     var result = {};
