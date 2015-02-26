@@ -1,5 +1,4 @@
 var jsc = require('../src/jssmartcheck.js');
-var jsc2 = require('../dist/jssmartcheck.js');
 var gen = jsc.gen;
 // var gen = require('../src/generators');
 var _ = require('lodash');

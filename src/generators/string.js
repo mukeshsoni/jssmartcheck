@@ -17,19 +17,19 @@ var regexOptions = {
 
 var defaultRange = new DRange(32, 126);
 
-stringGens.string = (size) => {
+stringGens.string = (size=10) => {
     return arrayGen.arrayOf(basicGen.char)(size).join('');
 };
 
-stringGens.string.ascii = (size) => {
+stringGens.string.ascii = (size=10) => {
     return arrayGen.arrayOf(basicGen.char.ascii)(size).join('');
 };
 
 /*Generate a string of alphabets*/
-stringGens.string.alpha = (size) => arrayGen.arrayOf(basicGen.char.alpha)(size).join('');
+stringGens.string.alpha = (size=10) => arrayGen.arrayOf(basicGen.char.alpha)(size).join('');
 
 /*Generate a string of alpha numeric characters*/
-stringGens.string.alphaNum = (size) => arrayGen.arrayOf(basicGen.char.alphaNum)(size).join('');
+stringGens.string.alphaNum = (size=10) => arrayGen.arrayOf(basicGen.char.alphaNum)(size).join('');
 
 var getTokenRange = (token) => {
     
