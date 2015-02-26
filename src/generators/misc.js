@@ -1,3 +1,4 @@
+var assert = require('assert');
 var utils = require('../utils');
 var basicGen = require('./basic');
 var numberGen = require('./number');
@@ -5,6 +6,26 @@ var stringGen = require('./string');
 var objectGen = require('./object.js');
 
 var miscGens = {};
+
+miscGens.suchThat = (filterFn, gen, maxIterations=10) => {
+    return (size) => {
+        var generatedValue = gen(size)
+        var iterationCount = 0;
+        while(filterFn(generatedValue) !== true && iterationCount < maxIterations) {
+            generatedValue = gen(size);
+            iterationCount += 1;
+            size += 1;
+        }
+
+
+        assert(filterFn(generatedValue), `could not a generate value as per filter function after ${maxIterations}`);
+
+        return generatedValue;
+    }
+};
+
+/*Picks a random generator from a list of generators*/
+miscGens.oneOf = (...gens) => basicGen.elements(gens)();
 
 /*
  * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
