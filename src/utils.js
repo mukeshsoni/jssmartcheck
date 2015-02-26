@@ -14,7 +14,7 @@ function _getRandomNumber(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-function random(min, max, isFloat) {
+function random(min=0, max=Number.MAX_VALUE, isFloat) {
 	return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
 }
 
