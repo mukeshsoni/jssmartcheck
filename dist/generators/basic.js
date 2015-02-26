@@ -8,7 +8,6 @@ var getAlphaChars = function () {
     return alphaNums.substr(0, 51);
 };
 
-
 /*creates a Generator which returns a random element from a list (array in our case)*/
 var elements = function (items) {
     return function () {
@@ -66,6 +65,5 @@ basicGens.value = function (val) {
         return val;
     };
 };
-
 
 module.exports = basicGens;

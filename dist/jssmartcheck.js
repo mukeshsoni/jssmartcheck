@@ -30,16 +30,17 @@ var getErrorMessage = function (numTests, fail) {
 jssmartcheck.check = function (f) {
     var times = arguments[1] === undefined ? 100 : arguments[1];
     var seed = arguments[2] === undefined ? Math.random() * 1000 : arguments[2];
+
     jssmartcheck.seed = seed;
     assert(typeof f === "function", "check expects a property function");
 
     for (var i = 0; i < times; i++) {
         var sampleValues;
+
         (function (i) {
             sampleValues = jssmartcheck.forallGens.map(function (gen, index) {
                 return gen(i);
             });
-
 
             assert(f.apply(undefined, sampleValues) === true, getErrorMessage(i, sampleValues));
         })(i);

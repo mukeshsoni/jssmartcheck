@@ -38,6 +38,7 @@ stringGens.string.alphaNum = function (size) {
 };
 
 var getTokenRange = function (token) {
+
     switch (token.type) {
         case types.CHAR:
             return new DRange(token.value);
@@ -72,6 +73,7 @@ var otherCase = function (charIntVal) {
 
 var getChar = function (charIntVal) {
     var ignoreCase = arguments[1] === undefined ? false : arguments[1];
+
     var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
     return String.fromCharCode(charCode);
 };

@@ -26,6 +26,7 @@ var frequency = function (pairs) {
 
 var suchThat = function (filterFn, gen) {
     var maxIterations = arguments[2] === undefined ? 10 : arguments[2];
+
     return function (size) {
         var generatedValue = gen(size);
         var iterationCount = 0;
@@ -34,7 +35,6 @@ var suchThat = function (filterFn, gen) {
             iterationCount += 1;
             size += 1;
         }
-
 
         assert(filterFn(generatedValue), "could not a generate value as per filter function after " + maxIterations);
 
@@ -53,6 +53,7 @@ var oneOf = function () {
 
 var sample = function (gen) {
     var times = arguments[1] === undefined ? 100 : arguments[1];
+
     var results = [];
     for (var i = 0; i < times; i++) {
         results.push(gen(i));

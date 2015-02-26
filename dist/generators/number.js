@@ -25,15 +25,17 @@ numberGen.int.shrink = regeneratorRuntime.mark(function callee$0$0(val) {
             case 0:
                 limit = Math.abs(val);
                 shrinkedVal = limit - 1;
+
             case 2:
                 if (!(Math.abs(shrinkedVal) !== 0)) {
                     context$1$0.next = 8;
                     break;
                 }
+
                 context$1$0.next = 5;
                 return shrinkedVal;
-            case 5:
 
+            case 5:
 
                 if (shrinkedVal >= 0) {
                     shrinkedVal = -shrinkedVal;
@@ -42,9 +44,11 @@ numberGen.int.shrink = regeneratorRuntime.mark(function callee$0$0(val) {
                 }
                 context$1$0.next = 2;
                 break;
+
             case 8:
                 context$1$0.next = 10;
                 return shrinkedVal;
+
             case 10:
             case "end":
                 return context$1$0.stop();
@@ -85,7 +89,6 @@ numberGen.uint = function () {
 numberGen.uint.large = function () {
     return Math.floor(Math.random() * Number.MAX_VALUE);
 };
-
 
 module.exports = numberGen;
 // for zero case

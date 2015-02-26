@@ -10,7 +10,6 @@ function isAscii(str) {
     return /^[\x00-\x7F]*$/.test(str);
 }
 
-
 // generate a random number between min and max.
 function _getRandomNumber(min, max) {
     return Math.random() * (max - min) + min;
@@ -59,7 +58,7 @@ function memoize(func) {
     var stringifyJson = JSON.stringify,
         cache = {};
 
-    var cachedfun = function () {
+    var cachedfun = function cachedfun() {
         var hash = stringifyJson(arguments);
         return hash in cache ? cache[hash] : cache[hash] = func.apply(this, arguments);
     };
