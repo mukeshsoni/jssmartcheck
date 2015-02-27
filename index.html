@@ -1,1 +1,300 @@
-My Page
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Jssmartcheck : Property based generative testing for JavaScript">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Jssmartcheck</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mukeshsoni/jssmartcheck">View on GitHub</a>
+
+          <h1 id="project_title">Jssmartcheck</h1>
+          <h2 id="project_tagline">Property based generative testing for JavaScript</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mukeshsoni/jssmartcheck/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mukeshsoni/jssmartcheck/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="jssmartcheck" class="anchor" href="#jssmartcheck" aria-hidden="true"><span class="octicon octicon-link"></span></a>jssmartcheck</h1>
+
+<p>jssmartcheck is a JavaScript property-based testing tool inspired by Haskell's <a href="https://wiki.haskell.org/Introduction_to_QuickCheck1">QuickCheck</a> and Clojure's <a href="https://github.com/clojure/test.check">test.check</a>.</p>
+
+<p>Property based testing is also known as generator based testing or generative testing. The principle behind property based testing is that it's really hard to create random testing data which covers all edge cases. But if we let the machine do the generation of test data for us, we could catch many more errors than otherwise. The generation of data by machine also lets us run our test on much more data than using manual methods.</p>
+
+<p>Another difference from traditional unit testing is that instead of giving the tests an 'expected output', we need to specify a property of the function which holds true for a given 'set' of input. This makes us think harder about the way we write functions, a welcome side effect.</p>
+
+<h1>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to Use</h1>
+
+<pre><code>$ npm install git+https://git@github.com/mukeshsoni/jssmartcheck.git
+</code></pre>
+
+<p>In your test file - </p>
+
+<pre><code>var jsc = require('jssmartcheck');
+var gen = jsc.gen;
+
+// sort is idempotent
+var property = function(x) {
+    return x.sort() === x.sort().sort();
+}
+
+// for all array of integers 'l', sorting l once is equal to sorting l twice
+jsc.forAll(gen.arrayOf(gen.int)).check(property);
+// { result: true, numTests: 100, seed: 14.77343332953751 }
+
+</code></pre>
+
+<p>Example of a failing test case - </p>
+
+<pre><code>// the first element of a sorted array of integers is less than the last element
+var propFn = (x) =&gt; {
+    x.sort();
+    return x[0] &lt; x[x.length - 1];
+}
+
+var nonEmptyGen = gen.suchThat((n) =&gt; n.length &gt; 0, gen.arrayOf(gen.int));
+jsc.forAll(nonEmptyGen).check(propFn)
+// {"result":false,"numTests":0,"fail":[[0,0]]} 
+</code></pre>
+
+<p>jssmartcheck will throw an AssertionError if the property function fails for any of the generated input. The printed output will show <code>result</code> key as false for a failing test case.</p>
+
+<p>Also as seen in the failing test case, one can easily compose new generators out of the existing ones. jssmartcheck even provides a few helper functions to make the process of writing custom generators easy.</p>
+
+<h1>
+<a id="integration-with-testing-frameworks" class="anchor" href="#integration-with-testing-frameworks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Integration with testing frameworks</h1>
+
+<p>jssmartcheck works out of the box for <a href="http://mochajs.org/">mochajs</a>. Should also work with jasmine and qunit but have not been tested yet.</p>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
+
+<h2>
+<a id="generators" class="anchor" href="#generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generators</h2>
+
+<p>Generators help you generate random values of a specific type against which the property function is run. <em>jssmartcheck</em> provides a number of generators to get you started. You can also compose your own generators using the existing ones. Or roll up your own. They are just functions.</p>
+
+<p>You can use the gen.sample function to quickly check what a generator might produce.</p>
+
+<h3>
+<a id="simple-generators" class="anchor" href="#simple-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Simple Generators</h3>
+
+<pre><code>var gen = require('jssmartcheck').gen;
+
+// generate 10 random integers
+gen.sample(gen.int, 10); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+
+// generate 10 random positive integers
+gen.sample(gen.int.positive); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+
+// generate 5 random strings
+gen.sample(gen.string, 5); // [ '', '', '\u0012', 'tû¨', 'è' 
+
+</code></pre>
+
+<h3>
+<a id="slightly-complex-generators" class="anchor" href="#slightly-complex-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Slightly complex Generators</h3>
+
+<pre><code>// generate 10 random ascii strings
+gen.sample(gen.string.ascii, 10); // [ '', '', '9', '', 'rNq', '6b#Ph', 'J', 'r', '.K', '\'qwq DcZ' ]
+
+// generate 10 random alpha numeric strings
+gen.sample(gen.string.alphaNum, 10); // [ '', '', '', 'Ti', 'A', 'vInl', 'Wi', 'puniD', 'q3z', 'RuZZ3Rsh' ]
+
+// generate 5 strings matching the given pattern
+gen.sample(gen.string.matches(/boo{1,3}m/)); // [ 'boom', 'boom', 'boooom', 'booom', 'boom' ]
+
+// generate numeric strings of length 3-6 characters and numeric only
+gen.sample(gen.string.matches(/\d{3,6}/), 5); // [ '3404', '3685', '4451', '137513', '75258' ]
+
+// generate an object of given shape
+gen.sample(gen.object.ofShape({
+    name: gen.string.matches(/\w{3,5}(\s\w{5,8})?/),
+    age: gen.suchThat((age) =&gt; age &gt; 4, gen.int.positive),
+    sex: gen.elements(['M', 'F', 'Neither'])
+}), 10)
+
+/*
+    [ 
+        { name: 'vWo4 _7ivwS', age: 10, sex: 'M' },
+        { name: 'T9uZe', age: 9, sex: 'F' },
+        { name: '53f O_JBi1u', age: 6, sex: 'M' },
+        { name: '0n1', age: 6, sex: 'Neither' },
+        { name: '49yW MQzJyHBR', age: 5, sex: 'F' },
+        { name: 'm24　XbC68G', age: 6, sex: 'M' },
+        { name: 'iON i_7u5_V', age: 7, sex: 'F' },
+        { name: '_3yc', age: 7, sex: 'Neither' },
+        { name: 'StH_\fJE3_fJX', age: 10, sex: 'M' },
+        { name: '7bo8\fwt73_H', age: 7, sex: 'F' } 
+    ]
+*/
+</code></pre>
+
+<h2>
+<a id="detailed-documentation-of-all-generators" class="anchor" href="#detailed-documentation-of-all-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Detailed Documentation of all Generators</h2>
+
+<h3>
+<a id="number-generators" class="anchor" href="#number-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Number generators</h3>
+
+<p><strong>integers</strong> - gen.int</p>
+
+<pre><code>var gen = require('jssmartcheck').gen;
+
+// generate 10 random integers
+gen.sample(gen.int, 10); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+
+</code></pre>
+
+<p><strong>positive integers</strong> - gen.int.positive</p>
+
+<pre><code>var gen = require('jssmartcheck').gen;
+
+// generate 10 random positive integers
+gen.sample(gen.int.positive, 10); // [ 0, 0, -1, 1, -2, 4, 1, 0, -6, 0 ]
+</code></pre>
+
+<p><strong>integer in a range</strong> - gen.int.between</p>
+
+<pre><code>
+var gen = require('jssmartcheck').gen;
+
+// generate 10 integer in the range [min, max] (both inclusive)
+gen.sample(gen.int.between(10, 100), 10); // [ 55, 31, 10, 75, 84, 19, 59, 34, 86, 12]
+</code></pre>
+
+<p><strong>floating point number</strong> - gen.float</p>
+
+<pre><code>
+var gen = require('jssmartcheck').gen;
+
+// generate 10 floating point numbers
+gen.sample(gen.float, 10); 
+
+/* 
+    [ 
+        0,
+        -9263.793444260955,
+        1457.7880781143904,
+        -23325.45812241733,
+        -27032.062970101833,
+        -22139.405994676054,
+        53050.33131502569,
+        30739.869456738234,
+        25103.324092924595,
+        65394.96577810496 
+    ]
+*/
+</code></pre>
+
+<p><strong>large integer</strong> - gen.int.large</p>
+
+<pre><code>
+var gen = require('jssmartcheck').gen;
+
+// generate 10 large integers
+gen.sample(gen.int.large, 10); 
+
+/*
+    [ 
+        1.7942217500110602e+308,
+        2.9093457718352433e+306,
+        3.6593154190409177e+307,
+        8.085731107763065e+306,
+        9.616694531726025e+307,
+        1.1036431189239296e+308,
+        1.7337810355081831e+308,
+        1.7816857602101413e+308,
+        6.798105794239869e+307,
+        4.032906283193464e+307 
+    ]
+*/
+</code></pre>
+
+<p><strong>unsigned integer</strong> - gen.uint</p>
+
+<pre><code>
+var gen = require('jssmartcheck').gen;
+
+// generate 10 unsigned integers
+gen.sample(gen.uint, 10);  //[ 0, 0, 3, 6, 14, 18, 23, 10, 21, 11 ]
+</code></pre>
+
+<h3>
+<a id="string-generators" class="anchor" href="#string-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>String generators</h3>
+
+<p><strong>strings</strong> - gen.string</p>
+
+<pre><code>var gen = require('jssmartcheck').gen;
+
+// generate 10 strings
+gen.sample(gen.string, 10); 
+
+/*
+    [ 
+        '',
+        '',
+        '',
+        'ð',
+        'K',
+        '[²Wg',
+        '\u0001çä',
+        '"qt',
+        'jK\u001c]ô',
+        '²Ý»¼¶\tG' 
+    ]
+*/
+</code></pre>
+
+<h3>
+<a id="array-generators" class="anchor" href="#array-generators" aria-hidden="true"><span class="octicon octicon-link"></span></a>Array generators</h3>
+
+<p><strong>array</strong> - gen.arrayOf</p>
+
+<pre><code>var gen = require('jssmartcheck').gen;
+
+// generate an array of integers
+gen.sample(gen.arrayOf(gen.int), 1); // [ [0, 4, 2, 6] ]
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Jssmartcheck maintained by <a href="https://github.com/mukeshsoni">mukeshsoni</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-58935518-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
