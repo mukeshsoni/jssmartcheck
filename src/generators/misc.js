@@ -1,5 +1,6 @@
+'use strict';
+
 var assert = require('assert');
-var utils = require('../utils');
 var basicGen = require('./basic');
 var numberGen = require('./number');
 var stringGen = require('./string');
@@ -8,7 +9,7 @@ var miscGens = {};
 
 miscGens.suchThat = (filterFn, gen, maxIterations=10) => {
     return (size) => {
-        var generatedValue = gen(size)
+        var generatedValue = gen(size);
         var iterationCount = 0;
         while(filterFn(generatedValue) !== true && iterationCount < maxIterations) {
             generatedValue = gen(size);
@@ -20,7 +21,7 @@ miscGens.suchThat = (filterFn, gen, maxIterations=10) => {
         assert(filterFn(generatedValue), `could not a generate value as per filter function after ${maxIterations}`);
 
         return generatedValue;
-    }
+    };
 };
 
 /*Picks a random generator from a list of generators*/
@@ -59,7 +60,7 @@ miscGens.any = () => {
 
 /*
  * Returns any one of the following generators with given weights
- * number.int -> 
+ * number.int ->
  * number.int.positive ->
  * bool ->
  * string ->

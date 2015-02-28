@@ -1,3 +1,5 @@
+'use strict';
+
 var gen = require('../src/generators/object');
 var stringGen = require('../src/generators/string');
 var numberGen = require('../src/generators/number');
@@ -9,8 +11,8 @@ describe('object generators', () => {
         it('should generate object of random shape', () => {
             _.times(100, () => {
                 expect(gen.object()).to.be.an('object');
-            })
-        });    
+            });
+        });
     });
 
     describe('object of particular shape', () => {
@@ -39,7 +41,7 @@ describe('object generators', () => {
         it('should generated nested objects for nested shapes', () => {
             var regex = /^m(r|s)\. [A-Z][a-z]{3,9}$/;
             var shape = {
-                name: stringGen.string.matches(regex), 
+                name: stringGen.string.matches(regex),
                 details: {
                     age: numberGen.int.positive
                 }

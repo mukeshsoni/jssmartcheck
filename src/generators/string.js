@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var ret = require('ret');
 var types = ret.types;
@@ -13,7 +15,7 @@ var regexOptions = {
     ignoreCase: false,
     multiline: false,
     regexRepetitionMax: 100 // max number of characters to generate for '*' like expressions
-}
+};
 
 var defaultRange = new DRange(32, 126);
 
@@ -32,7 +34,7 @@ stringGens.string.alpha = (size=10) => arrayGen.arrayOf(basicGen.char.alpha)(siz
 stringGens.string.alphaNum = (size=10) => arrayGen.arrayOf(basicGen.char.alphaNum)(size).join('');
 
 var getTokenRange = (token) => {
-    
+
     switch(token.type) {
         case types.CHAR:
             return new DRange(token.value);
@@ -55,20 +57,26 @@ var getTokenRange = (token) => {
 
 };
 
+var getChar = (charIntVal, ignoreCase=false) => {
+    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
+    return String.fromCharCode(charCode);
+};
+
 var generateRandomValFromRange = (drange) => {
     var randomRange = utils.random(0, drange.ranges.length - 1);
     return getChar(utils.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
 };
 
 var otherCase = (charIntVal) => {
-    if(97 <= charIntVal && charIntVal <= 122) return charIntVal - 32;
-    if(65 <= charIntVal && charIntVal <= 90) return charIntVal + 32;
-    return charIntVal;
-};
+    if(charIntVal >= 97 && charIntVal <= 122) {
+        return charIntVal - 32;
+    }
 
-var getChar = (charIntVal, ignoreCase=false) => {
-    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
-    return String.fromCharCode(charCode);
+    if(charIntVal >= 65 && charIntVal <= 90) {
+        return charIntVal + 32;
+    }
+
+    return charIntVal;
 };
 
 var generateMatchingString = (token, groups) => {
@@ -77,7 +85,9 @@ var generateMatchingString = (token, groups) => {
     switch(token.type) {
         case types.ROOT:
         case types.GROUP:
-            if (token.notFollowedBy) return '';
+            if (token.notFollowedBy) {
+                return '';
+            }
             // Insert placeholder until group string is generated.
             if (token.remember && token.groupNumber === undefined) {
                 token.groupNumber = groups.push(null) - 1;
@@ -108,11 +118,11 @@ var generateMatchingString = (token, groups) => {
         case types.RANGE:
             // don't know when this happens
             return getChar(utils.random(token.from, token.to), regexOptions.ignoreCase);
-            break;
         case types.REPETITION: // *, {1, }, {2, 6}
             var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = '';
+
             for(let i in utils.range(0, stringRandomLength)) {
                 str += generateMatchingString(token.value, groups);
             }
@@ -131,8 +141,13 @@ stringGens.string.matches = (pattern, options) => {
 
     var regexSource = pattern;
     if(utils.isString(pattern)) {
-        if(options && options['i']) regexOptions.ignoreCase = true;
-        if(options && options['m']) regexOptions.multiline = true;
+        if(options && options.i) {
+            regexOptions.ignoreCase = true;
+        }
+
+        if(options && options.m) {
+            regexOptions.multiline = true;
+        }
     } else {
         stringGens.string.ignoreCase = pattern.ignoreCase;
         stringGens.string.multiline = pattern.multiline;
@@ -142,7 +157,7 @@ stringGens.string.matches = (pattern, options) => {
     var tokens = ret(regexSource);
     return () => {
         return generateMatchingString(tokens, []);
-    }
+    };
 };
 
 module.exports = stringGens;

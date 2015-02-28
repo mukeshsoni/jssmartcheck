@@ -1,7 +1,7 @@
+'use strict';
+
 var assert = require('assert');
 var utils = require('../utils');
-var basicGen = require('./basic.js');
-var numberGen = require('./number.js');
 var stringGen = require('./string.js');
 var miscGen = require('./misc.js');
 

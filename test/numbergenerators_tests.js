@@ -1,3 +1,5 @@
+'use strict';
+
 var gen = require('../src/generators/number');
 var _ = require('lodash');
 var expect = require('chai').expect;
@@ -8,12 +10,12 @@ describe('Number generators', () => {
 	it('should generate random integers', () => {
 		_.times(testTimes, () => {
 			var n = gen.int(utils.random(0, 100));
-			expect(_.isNumber(n) && (Math.floor(n) === n)).to.be.true;
+			expect(_.isNumber(n) && (Math.floor(n) === n)).to.be.true();
 		});
 	});
 
 	it('should generate a positive integer', () => {
-		_.times(testTimes, () => expect(gen.int.positive(utils.random(0,100)) > 0).to.be.true);
+		_.times(testTimes, () => expect(gen.int.positive(utils.random(0, 100)) > 0).to.be.true);
 	});
 
 	it('should generate an integer between', () => {
@@ -26,7 +28,7 @@ describe('Number generators', () => {
 	});
 
 	it('should generate a floating number', () => {
-		_.times(testTimes, () => expect(_.isNumber(gen.float(utils.random(0,100)))).to.be.true);
+		_.times(testTimes, () => expect(_.isNumber(gen.float(utils.random(0, 100)))).to.be.true);
 	});
 
 	it('should shrink integers', () => {

@@ -1,5 +1,6 @@
+'use strict';
+
 // gets all generators together into a single module
-var assert = require('assert');
 var utils = require('../utils');
 var stringGen = require('./string.js');
 var numberGen = require('./number.js');
@@ -27,7 +28,7 @@ generators.extend = function(...obj) {
         obj = [obj];
     }
     utils.extend.apply(utils, [generators].concat(obj));
-}
+};
 
 generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);
 module.exports = generators;

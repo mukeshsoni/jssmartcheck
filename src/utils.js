@@ -1,13 +1,6 @@
+'use strict';
+
 var _extend = require('extend');
-
-function choose(elements) {
-    return elements[random(0, elements.length-1)];
-}
-
-function isAscii(str) {
-    return /^[\x00-\x7F]*$/.test(str);
-}
-
 
 // generate a random number between min and max.
 function _getRandomNumber(min, max) {
@@ -15,7 +8,15 @@ function _getRandomNumber(min, max) {
 }
 
 function random(min=0, max=Number.MAX_VALUE, isFloat) {
-	return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
+    return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
+}
+
+function choose(elements) {
+    return elements[random(0, elements.length-1)];
+}
+
+function isAscii(str) {
+    return /^[\x00-\x7F]*$/.test(str);
 }
 
 // generate a range of values (array)
@@ -27,11 +28,11 @@ function range(min, max) {
 
 function isObject(value) {
   var type = typeof value;
-  return type == 'function' || (value && type == 'object') || false;
+  return type === 'function' || (value && type == 'object') || false;
 }
 
 function isFunction(value) {
-  return typeof value == 'function' || false;
+  return typeof value === 'function' || false;
 }
 
 function isString(value) {
@@ -56,28 +57,40 @@ function memoize(func) {
         return (hash in cache) ? cache[hash] : cache[hash] = func.apply(this, arguments);
     };
 
-    cachedfun.__cache = (function() {
-        cache.remove || (cache.remove = function() {
-            var hash = stringifyJson(arguments);
-            return (delete cache[hash]);
-        });
+    cachedfun.__cache = function() {
+        if(!cache.remove) {
+            cache.remove = function() {
+                var hash = stringifyJson(arguments);
+                return (delete cache[hash]);
+            };
+        }
         return cache;
-    }).call(this);
+    }.call(this);
 
     return cachedfun;
+}
+
+function times(n, iterator) {
+    var accum = Array(Math.max(0, n));
+    for (var i = 0; i < n; i++) {
+        accum[i] = iterator.call();
+    }
+
+    return accum;
 }
 
 var utils = {
     choose: choose,
     isAscii: isAscii,
-    random : random,
-    range : range,
-    isObject : isObject,
-    isFunction : isFunction,
-    isString : isString,
-    extend : extend,
-    last : last,
-    memoize : memoize
+    random: random,
+    range: range,
+    isObject: isObject,
+    isFunction: isFunction,
+    isString: isString,
+    extend: extend,
+    last: last,
+    memoize: memoize,
+    times: times
 };
 
 module.exports = utils;

@@ -1,4 +1,6 @@
-require("babel/polyfill");
+'use strict';
+
+require('babel/polyfill');
 var basic = require('./basic');
 var utils = require('../utils');
 
@@ -33,13 +35,13 @@ numberGen.int.positive = (size=100) => numberGen.intUpto(size) + 1;
 /*Choose an integer in the range [min, max], both inclusive in search*/
 numberGen.int.choose = numberGen.int.between = (min, max) => {
 	return basic.elements(utils.range(min, max+1));
-}
+};
 
 /*Generate a float bounded by [-size, size]*/
 numberGen.float = (size=100) => basic.random()*size;
 
 /*Generate a large integer*/
-numberGen.int.large = () => Math.floor(Math.random() * Number.MAX_VALUE)
+numberGen.int.large = () => Math.floor(Math.random() * Number.MAX_VALUE);
 
 /*Generate an unsigned integer*/
 // TODO - no idea why it has to be upto size*size

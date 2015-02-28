@@ -1,12 +1,15 @@
-var generator = require('./index');
+'use strict';
+
 var utils = require('../utils');
 var fnGens = {};
 
 fnGens.fn = (...args) => {
     var returnGenerator = utils.last(args);
     return utils.memoize((size) => {
-        if(utils.isFunction(returnGenerator)) 
+        if(utils.isFunction(returnGenerator)) {
             return returnGenerator(size);
+        }
+
         return returnGenerator;
     });
 };

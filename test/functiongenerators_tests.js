@@ -1,7 +1,8 @@
+'use strict';
+
 var gen = require('../src/generators/function');
 var numberGen = require('../src/generators/number');
 var _ = require('lodash');
-var utils = require('../src/utils');
 var expect = require('chai').expect;
 
 describe('function generators', function () {

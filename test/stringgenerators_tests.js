@@ -1,3 +1,5 @@
+'use strict';
+
 var gen = require('../src/generators/string');
 var _ = require('lodash');
 var utils = require('../src/utils');
@@ -25,12 +27,12 @@ describe('string generators', () => {
 			});
 
 			// atleast one generated string has size less than size
-			expect(_.some(generatedStrings, (string) => (string.length < size))).to.be.true;
+			expect(_.some(generatedStrings, (string) => (string.length < size))).to.be.true();
 		});
 
 		it('should generate random ascii string', () => {
 			_.times(30, () => {
-				expect(utils.isAscii(gen.string.ascii(20))).to.be.true;
+				expect(utils.isAscii(gen.string.ascii(20))).to.be.true();
 			});
 		});
 
@@ -65,14 +67,15 @@ describe('string generators', () => {
 
 		it('should only accept regex string or regex as input', () => {
 			expect(() => gen.string.matches(123)).to.throw(Error);
-			expect(() => gen.string.matches("abc")).to.not.throw();
-			expect(() => gen.string.matches("ab.c?d*")).to.not.throw();
+			expect(() => gen.string.matches('abc')).to.not.throw();
+			expect(() => gen.string.matches('ab.c?d*')).to.not.throw();
 			expect(() => gen.string.matches(/ab./)).to.not.throw(Error);
 			expect(() => gen.string.matches(/ab./ig)).to.not.throw(Error);
 		});
 
+		// TODO
 		it('should throw if the regex is invalid', function() {
-			var regexes = [/[^\W\w]/, /[^\D\d]/, /[^\S\s]/, /[]/];
+			// var regexes = [/[^\W\w]/, /[^\D\d]/, /[^\S\s]/, /[]/];
 			// console.log(gen.string.matches(regexes[0])());
 			// expect(() => gen.string.matches(/a^/)).to.throw(Error);
 			// console.log(gen.string.matches(/ab/)());
