@@ -3269,7 +3269,7 @@ exports.error = function(regexp, msg) {
 "use strict";
 
 var constants = {
-	MAX_INT: 10000
+  MAX_INT: 10000
 };
 
 module.exports = constants;
@@ -3296,12 +3296,12 @@ module.exports = arrayGens;
 "use strict";
 
 var utils = require("../utils");
-var constants = require("../constants");
 var basicGens = {};
 var alphaNums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var getAlphaChars = function () {
     return alphaNums.substr(0, 51);
 };
+var constants = require("./../constants.js");
 
 /*creates a Generator which returns a random element from a list (array in our case)*/
 var elements = function (items) {
@@ -3363,10 +3363,9 @@ basicGens.value = function (val) {
 
 module.exports = basicGens;
 
-},{"../constants":12,"../utils":22}],15:[function(require,module,exports){
+},{"../utils":22,"./../constants.js":12}],15:[function(require,module,exports){
 "use strict";
 
-var generator = require("./index");
 var utils = require("../utils");
 var fnGens = {};
 
@@ -3377,7 +3376,10 @@ fnGens.fn = function () {
 
     var returnGenerator = utils.last(args);
     return utils.memoize(function (size) {
-        if (utils.isFunction(returnGenerator)) return returnGenerator(size);
+        if (utils.isFunction(returnGenerator)) {
+            return returnGenerator(size);
+        }
+
         return returnGenerator;
     });
 };
@@ -3385,11 +3387,10 @@ fnGens.fn = function () {
 fnGens.fun = fnGens["function"] = fnGens.fn;
 module.exports = fnGens;
 
-},{"../utils":22,"./index":16}],16:[function(require,module,exports){
+},{"../utils":22}],16:[function(require,module,exports){
 "use strict";
 
 // gets all generators together into a single module
-var assert = require("assert");
 var utils = require("../utils");
 var stringGen = require("./string.js");
 var numberGen = require("./number.js");
@@ -3428,11 +3429,10 @@ generators.extend = function () {
 generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);
 module.exports = generators;
 
-},{"../utils":22,"./array.js":13,"./basic.js":14,"./function.js":15,"./misc.js":17,"./number.js":18,"./object.js":19,"./string.js":20,"assert":23}],17:[function(require,module,exports){
+},{"../utils":22,"./array.js":13,"./basic.js":14,"./function.js":15,"./misc.js":17,"./number.js":18,"./object.js":19,"./string.js":20}],17:[function(require,module,exports){
 "use strict";
 
 var assert = require("assert");
-var utils = require("../utils");
 var basicGen = require("./basic");
 var numberGen = require("./number");
 var stringGen = require("./string");
@@ -3489,7 +3489,7 @@ miscGens.any = function () {
 
 /*
  * Returns any one of the following generators with given weights
- * number.int -> 
+ * number.int ->
  * number.int.positive ->
  * bool ->
  * string ->
@@ -3509,7 +3509,7 @@ miscGens.date = function () {
 
 module.exports = miscGens;
 
-},{"../utils":22,"./basic":14,"./number":18,"./object.js":19,"./string":20,"assert":23}],18:[function(require,module,exports){
+},{"./basic":14,"./number":18,"./object.js":19,"./string":20,"assert":23}],18:[function(require,module,exports){
 "use strict";
 
 require("babel/polyfill");
@@ -3610,8 +3610,6 @@ module.exports = numberGen;
 
 var assert = require("assert");
 var utils = require("../utils");
-var basicGen = require("./basic.js");
-var numberGen = require("./number.js");
 var stringGen = require("./string.js");
 var miscGen = require("./misc.js");
 
@@ -3664,7 +3662,7 @@ objectGens.object.ofShape = function (shape) {
 
 module.exports = objectGens;
 
-},{"../utils":22,"./basic.js":14,"./misc.js":17,"./number.js":18,"./string.js":20,"assert":23}],20:[function(require,module,exports){
+},{"../utils":22,"./misc.js":17,"./string.js":20,"assert":23}],20:[function(require,module,exports){
 "use strict";
 
 var assert = require("assert");
@@ -3733,22 +3731,28 @@ var getTokenRange = function (token) {
     }
 };
 
+var getChar = function (charIntVal) {
+    var ignoreCase = arguments[1] === undefined ? false : arguments[1];
+
+    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
+    return String.fromCharCode(charCode);
+};
+
 var generateRandomValFromRange = function (drange) {
     var randomRange = utils.random(0, drange.ranges.length - 1);
     return getChar(utils.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
 };
 
 var otherCase = function (charIntVal) {
-    if (97 <= charIntVal && charIntVal <= 122) return charIntVal - 32;
-    if (65 <= charIntVal && charIntVal <= 90) return charIntVal + 32;
+    if (charIntVal >= 97 && charIntVal <= 122) {
+        return charIntVal - 32;
+    }
+
+    if (charIntVal >= 65 && charIntVal <= 90) {
+        return charIntVal + 32;
+    }
+
     return charIntVal;
-};
-
-var getChar = function (charIntVal) {
-    var ignoreCase = arguments[1] === undefined ? false : arguments[1];
-
-    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
-    return String.fromCharCode(charCode);
 };
 
 var generateMatchingString = function (token, groups) {
@@ -3757,7 +3761,9 @@ var generateMatchingString = function (token, groups) {
     switch (token.type) {
         case types.ROOT:
         case types.GROUP:
-            if (token.notFollowedBy) return "";
+            if (token.notFollowedBy) {
+                return "";
+            }
             // Insert placeholder until group string is generated.
             if (token.remember && token.groupNumber === undefined) {
                 token.groupNumber = groups.push(null) - 1;
@@ -3790,12 +3796,12 @@ var generateMatchingString = function (token, groups) {
         case types.RANGE:
             // don't know when this happens
             return getChar(utils.random(token.from, token.to), regexOptions.ignoreCase);
-            break;
         case types.REPETITION:
             // *, {1, }, {2, 6}
             var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
 
             str = "";
+
             for (var i in utils.range(0, stringRandomLength)) {
                 str += generateMatchingString(token.value, groups);
             }
@@ -3814,8 +3820,13 @@ stringGens.string.matches = function (pattern, options) {
 
     var regexSource = pattern;
     if (utils.isString(pattern)) {
-        if (options && options.i) regexOptions.ignoreCase = true;
-        if (options && options.m) regexOptions.multiline = true;
+        if (options && options.i) {
+            regexOptions.ignoreCase = true;
+        }
+
+        if (options && options.m) {
+            regexOptions.multiline = true;
+        }
     } else {
         stringGens.string.ignoreCase = pattern.ignoreCase;
         stringGens.string.multiline = pattern.multiline;
@@ -3844,8 +3855,8 @@ jssmartcheck.forAll = function () {
         gens[_key] = arguments[_key];
     }
 
-    assert(gens.every(function (gen) {
-        return typeof gen === "function";
+    assert(gens.every(function (ranGen) {
+        return typeof ranGen === "function";
     }), "Expect all generators to be function references");
 
     jssmartcheck.forallGens = gens;
@@ -3871,8 +3882,8 @@ jssmartcheck.check = function (f) {
         var sampleValues;
 
         (function (i) {
-            sampleValues = jssmartcheck.forallGens.map(function (gen, index) {
-                return gen(i);
+            sampleValues = jssmartcheck.forallGens.map(function (ranGen) {
+                return ranGen(i);
             });
 
             assert(f.apply(undefined, sampleValues) === true, getErrorMessage(i, sampleValues));
@@ -3889,14 +3900,6 @@ module.exports = jssmartcheck;
 
 var _extend = require("extend");
 
-function choose(elements) {
-    return elements[random(0, elements.length - 1)];
-}
-
-function isAscii(str) {
-    return /^[\x00-\x7F]*$/.test(str);
-}
-
 // generate a random number between min and max.
 function _getRandomNumber(min, max) {
     return Math.random() * (max - min) + min;
@@ -3907,6 +3910,14 @@ function random(_x, _x2, isFloat) {
     var max = arguments[1] === undefined ? Number.MAX_VALUE : arguments[1];
 
     return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
+}
+
+function choose(elements) {
+    return elements[random(0, elements.length - 1)];
+}
+
+function isAscii(str) {
+    return /^[\x00-\x7F]*$/.test(str);
 }
 
 // generate a range of values (array)
@@ -3920,11 +3931,11 @@ function range(min, max) {
 
 function isObject(value) {
     var type = typeof value;
-    return type == "function" || value && type == "object" || false;
+    return type === "function" || value && type == "object" || false;
 }
 
 function isFunction(value) {
-    return typeof value == "function" || false;
+    return typeof value === "function" || false;
 }
 
 function isString(value) {
@@ -3954,14 +3965,25 @@ function memoize(func) {
     };
 
     cachedfun.__cache = (function () {
-        cache.remove || (cache.remove = function () {
-            var hash = stringifyJson(arguments);
-            return delete cache[hash];
-        });
+        if (!cache.remove) {
+            cache.remove = function () {
+                var hash = stringifyJson(arguments);
+                return delete cache[hash];
+            };
+        }
         return cache;
     }).call(this);
 
     return cachedfun;
+}
+
+function times(n, iterator) {
+    var accum = Array(Math.max(0, n));
+    for (var i = 0; i < n; i++) {
+        accum[i] = iterator.call();
+    }
+
+    return accum;
 }
 
 var utils = {
@@ -3974,7 +3996,8 @@ var utils = {
     isString: isString,
     extend: extend,
     last: last,
-    memoize: memoize
+    memoize: memoize,
+    times: times
 };
 
 module.exports = utils;
