@@ -229,3 +229,6 @@ var gen = require('jssmartcheck').gen;
 // generate an array of integers
 gen.sample(gen.arrayOf(gen.int), 1); // [ [0, 4, 2, 6] ]
 ```
+
+### WIP
+Still working of the detailed documentation of rest of the generators. In the mean time, you can look at the tests to get a feel of how they work.
