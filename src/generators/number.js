@@ -1,6 +1,6 @@
 'use strict';
 
-require('babel/polyfill');
+// require('babel/polyfill');
 var basic = require('./basic');
 var utils = require('../utils');
 
@@ -12,22 +12,22 @@ numberGen.intUpto = (size=100) => Math.floor(Math.random()*size);
 /*Generate an integer bounded by [-size, size]*/
 numberGen.int = (size=100) => basic.elements([-1, 1])()*numberGen.intUpto(size);
 
-numberGen.int.shrink = function *(val) {
-    var limit = Math.abs(val);
-    var shrinkedVal = limit - 1;
+// numberGen.int.shrink = function *(val) {
+//     var limit = Math.abs(val);
+//     var shrinkedVal = limit - 1;
 
-    while(Math.abs(shrinkedVal) !== 0) {
-        yield shrinkedVal;
+//     while(Math.abs(shrinkedVal) !== 0) {
+//         yield shrinkedVal;
 
-        if(shrinkedVal >= 0) {
-            shrinkedVal = -shrinkedVal;
-        } else {
-            shrinkedVal = -(shrinkedVal + 1);
-        }
-    }
+//         if(shrinkedVal >= 0) {
+//             shrinkedVal = -shrinkedVal;
+//         } else {
+//             shrinkedVal = -(shrinkedVal + 1);
+//         }
+//     }
 
-    yield shrinkedVal; // for zero case
-};
+//     yield shrinkedVal; // for zero case
+// };
 
 /*Generate a positive Integer*/
 numberGen.int.positive = (size=100) => numberGen.intUpto(size) + 1;

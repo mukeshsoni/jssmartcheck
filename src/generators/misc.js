@@ -1,5 +1,6 @@
 'use strict';
 
+require('../polyfills.js');
 var assert = require('assert');
 var basicGen = require('./basic');
 var numberGen = require('./number');
@@ -17,7 +18,7 @@ miscGens.suchThat = (filterFn, gen, maxIterations=10) => {
             size += 1;
         }
 
-
+;
         assert(filterFn(generatedValue), `could not a generate value as per filter function after ${maxIterations}`);
 
         return generatedValue;

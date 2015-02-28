@@ -1,6 +1,6 @@
 'use strict';
 
-require('babel/polyfill');
+// require('babel/polyfill');
 var assert = require('assert');
 var gen = require('./generators');
 

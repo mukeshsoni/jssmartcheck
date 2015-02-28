@@ -56,7 +56,7 @@ describe('examples', function () {
 			return x.sort() === x.sort().sort();
 		};
 
-		expect(jsc.forAll(gen.arrayOf(gen.int)).check(propFn)).to.not.throw();
+		expect(jsc.forAll(gen.arrayOf(gen.int)).check(propFn)).to.not.throw;
 		// Sample output - { result: true, numTests: 100, seed: 14.77343332953751 }
 	});
 
