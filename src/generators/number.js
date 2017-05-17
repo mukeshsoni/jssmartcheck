@@ -15,14 +15,14 @@ numberGen.int = (size=100) =>
 
 numberGen.int.shrink = function *(val) {
     if(val === 0 || val === 1) {
-        return 0
+        return 
     }
 
     yield 0
 
     var limit = Math.abs(val);
     var i = 1
-    yield Math.fllor(val/2)
+    yield Math.floor(val/2)
     if(val - 1 === Math.floor(val/2)) {
         return 0
     } else {

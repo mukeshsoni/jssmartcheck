@@ -8,9 +8,10 @@ var shrinkVal = jsc.shrinkVal
 
 describe('shrinking', () => {
     it.only('should shrink integers', () => {
-        const prop = x => x + 1 === 2
+        const prop = x => x + 1 < 22
         const index = 0
-        const allArgs = [4]
-        console.log(shrinkVal(gen.int, 4, prop, index, allArgs)) 
+        const val = 40
+        const allArgs = [val]
+        console.log(shrinkVal(gen.int, val, prop, index, allArgs)) 
     })
 })

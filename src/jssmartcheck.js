@@ -26,22 +26,18 @@ var getErrorMessage = (numTests, fail) => {
 function shrinkVal(gen, val, prop, index, allArgs) {
     if(gen.shrink && typeof gen.shrink === 'function') {
         const shrinkList = gen.shrink(val)
-        // if there is a shrink list
-        const nextVal = shrinkList.next()
-        if(nextVal.done === false) {
-            return shrinkVal(nextVal.value, val, prop, index, allArgs)
-        } else {
-            if(f.apply(null, [...allArgs.slice(0, index), shrunken.value, ...allArgs.slice(index + 1)]) === true) {
-                const nextVal2 = shrinkList.next()
-                if(nextVal2.done === false) {
-                    return val
-                } else {
-                    return shrinkVal(gen, nextVal2.value, prop, index, allArgs)
-                }
+        let nextVal = shrinkList.next()
+        while(nextVal.done === false) {
+            const v = shrinkVal(gen, nextVal.value, prop, index, allArgs)
+            const newAllArgs = [...allArgs.slice(0, index), v, ...allArgs.slice(index + 1)]
+            if(prop.apply(null, newAllArgs) === false) {
+                return v
             } else {
-                return val
+                nextVal = shrinkList.next()
             }
         }
+
+        return val
     } else {
         return val
     }
