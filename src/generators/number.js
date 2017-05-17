@@ -42,7 +42,9 @@ numberGen.int.shrink = function *(val) {
         if(nextVal > 0) {
             nextVal = -nextVal 
         } else {
-            nextVal = -nextVal*2
+            // multiply by 2 or 3 (chosen randomly)
+            // if we just keep multiplying by 2, it will only generate even numbers
+            nextVal = -nextVal*numberGen.int.between(2, 3)() + numberGen.int.choose(1,2)()
         }
     } 
 }
