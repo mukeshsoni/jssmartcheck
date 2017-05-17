@@ -3,6 +3,9 @@
 // require('babel/polyfill');
 var assert = require('assert');
 var gen = require('./generators');
+var {
+    getSize
+} = require('./get_random_vals')
 
 var jssmartcheck = { gen };
 
@@ -27,7 +30,7 @@ jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
 
     for(let i = 0; i < times; i++) {
         var sampleValues = jssmartcheck.forallGens.map((ranGen) => {
-            return ranGen(i);
+            return ranGen(getSize(i));
         });
 
         assert(f.apply(undefined, sampleValues) === true, getErrorMessage(i, sampleValues));
