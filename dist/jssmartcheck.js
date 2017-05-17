@@ -1,4 +1,498 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.jssmartcheck = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
+'use strict';
+
+// compare and isBuffer taken from https://github.com/feross/buffer/blob/680e9e5e488f22aac27599a57dc844a6315928dd/index.js
+// original notice:
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+function compare(a, b) {
+  if (a === b) {
+    return 0;
+  }
+
+  var x = a.length;
+  var y = b.length;
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i];
+      y = b[i];
+      break;
+    }
+  }
+
+  if (x < y) {
+    return -1;
+  }
+  if (y < x) {
+    return 1;
+  }
+  return 0;
+}
+function isBuffer(b) {
+  if (global.Buffer && typeof global.Buffer.isBuffer === 'function') {
+    return global.Buffer.isBuffer(b);
+  }
+  return !!(b != null && b._isBuffer);
+}
+
+// based on node assert, original notice:
+
+// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+//
+// THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
+//
+// Originally from narwhal.js (http://narwhaljs.org)
+// Copyright (c) 2009 Thomas Robinson <280north.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var util = require('util/');
+var hasOwn = Object.prototype.hasOwnProperty;
+var pSlice = Array.prototype.slice;
+var functionsHaveNames = (function () {
+  return function foo() {}.name === 'foo';
+}());
+function pToString (obj) {
+  return Object.prototype.toString.call(obj);
+}
+function isView(arrbuf) {
+  if (isBuffer(arrbuf)) {
+    return false;
+  }
+  if (typeof global.ArrayBuffer !== 'function') {
+    return false;
+  }
+  if (typeof ArrayBuffer.isView === 'function') {
+    return ArrayBuffer.isView(arrbuf);
+  }
+  if (!arrbuf) {
+    return false;
+  }
+  if (arrbuf instanceof DataView) {
+    return true;
+  }
+  if (arrbuf.buffer && arrbuf.buffer instanceof ArrayBuffer) {
+    return true;
+  }
+  return false;
+}
+// 1. The assert module provides functions that throw
+// AssertionError's when particular conditions are not met. The
+// assert module must conform to the following interface.
+
+var assert = module.exports = ok;
+
+// 2. The AssertionError is defined in assert.
+// new assert.AssertionError({ message: message,
+//                             actual: actual,
+//                             expected: expected })
+
+var regex = /\s*function\s+([^\(\s]*)\s*/;
+// based on https://github.com/ljharb/function.prototype.name/blob/adeeeec8bfcc6068b187d7d9fb3d5bb1d3a30899/implementation.js
+function getName(func) {
+  if (!util.isFunction(func)) {
+    return;
+  }
+  if (functionsHaveNames) {
+    return func.name;
+  }
+  var str = func.toString();
+  var match = str.match(regex);
+  return match && match[1];
+}
+assert.AssertionError = function AssertionError(options) {
+  this.name = 'AssertionError';
+  this.actual = options.actual;
+  this.expected = options.expected;
+  this.operator = options.operator;
+  if (options.message) {
+    this.message = options.message;
+    this.generatedMessage = false;
+  } else {
+    this.message = getMessage(this);
+    this.generatedMessage = true;
+  }
+  var stackStartFunction = options.stackStartFunction || fail;
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, stackStartFunction);
+  } else {
+    // non v8 browsers so we can have a stacktrace
+    var err = new Error();
+    if (err.stack) {
+      var out = err.stack;
+
+      // try to strip useless frames
+      var fn_name = getName(stackStartFunction);
+      var idx = out.indexOf('\n' + fn_name);
+      if (idx >= 0) {
+        // once we have located the function frame
+        // we need to strip out everything before it (and its line)
+        var next_line = out.indexOf('\n', idx + 1);
+        out = out.substring(next_line + 1);
+      }
+
+      this.stack = out;
+    }
+  }
+};
+
+// assert.AssertionError instanceof Error
+util.inherits(assert.AssertionError, Error);
+
+function truncate(s, n) {
+  if (typeof s === 'string') {
+    return s.length < n ? s : s.slice(0, n);
+  } else {
+    return s;
+  }
+}
+function inspect(something) {
+  if (functionsHaveNames || !util.isFunction(something)) {
+    return util.inspect(something);
+  }
+  var rawname = getName(something);
+  var name = rawname ? ': ' + rawname : '';
+  return '[Function' +  name + ']';
+}
+function getMessage(self) {
+  return truncate(inspect(self.actual), 128) + ' ' +
+         self.operator + ' ' +
+         truncate(inspect(self.expected), 128);
+}
+
+// At present only the three keys mentioned above are used and
+// understood by the spec. Implementations or sub modules can pass
+// other keys to the AssertionError's constructor - they will be
+// ignored.
+
+// 3. All of the following functions must throw an AssertionError
+// when a corresponding condition is not met, with a message that
+// may be undefined if not provided.  All assertion methods provide
+// both the actual and expected values to the assertion error for
+// display purposes.
+
+function fail(actual, expected, message, operator, stackStartFunction) {
+  throw new assert.AssertionError({
+    message: message,
+    actual: actual,
+    expected: expected,
+    operator: operator,
+    stackStartFunction: stackStartFunction
+  });
+}
+
+// EXTENSION! allows for well behaved errors defined elsewhere.
+assert.fail = fail;
+
+// 4. Pure assertion tests whether a value is truthy, as determined
+// by !!guard.
+// assert.ok(guard, message_opt);
+// This statement is equivalent to assert.equal(true, !!guard,
+// message_opt);. To test strictly for the value true, use
+// assert.strictEqual(true, guard, message_opt);.
+
+function ok(value, message) {
+  if (!value) fail(value, true, message, '==', assert.ok);
+}
+assert.ok = ok;
+
+// 5. The equality assertion tests shallow, coercive equality with
+// ==.
+// assert.equal(actual, expected, message_opt);
+
+assert.equal = function equal(actual, expected, message) {
+  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
+};
+
+// 6. The non-equality assertion tests for whether two objects are not equal
+// with != assert.notEqual(actual, expected, message_opt);
+
+assert.notEqual = function notEqual(actual, expected, message) {
+  if (actual == expected) {
+    fail(actual, expected, message, '!=', assert.notEqual);
+  }
+};
+
+// 7. The equivalence assertion tests a deep equality relation.
+// assert.deepEqual(actual, expected, message_opt);
+
+assert.deepEqual = function deepEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected, false)) {
+    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
+  }
+};
+
+assert.deepStrictEqual = function deepStrictEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected, true)) {
+    fail(actual, expected, message, 'deepStrictEqual', assert.deepStrictEqual);
+  }
+};
+
+function _deepEqual(actual, expected, strict, memos) {
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+  } else if (isBuffer(actual) && isBuffer(expected)) {
+    return compare(actual, expected) === 0;
+
+  // 7.2. If the expected value is a Date object, the actual value is
+  // equivalent if it is also a Date object that refers to the same time.
+  } else if (util.isDate(actual) && util.isDate(expected)) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3 If the expected value is a RegExp object, the actual value is
+  // equivalent if it is also a RegExp object with the same source and
+  // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
+  } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
+    return actual.source === expected.source &&
+           actual.global === expected.global &&
+           actual.multiline === expected.multiline &&
+           actual.lastIndex === expected.lastIndex &&
+           actual.ignoreCase === expected.ignoreCase;
+
+  // 7.4. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if ((actual === null || typeof actual !== 'object') &&
+             (expected === null || typeof expected !== 'object')) {
+    return strict ? actual === expected : actual == expected;
+
+  // If both values are instances of typed arrays, wrap their underlying
+  // ArrayBuffers in a Buffer each to increase performance
+  // This optimization requires the arrays to have the same type as checked by
+  // Object.prototype.toString (aka pToString). Never perform binary
+  // comparisons for Float*Arrays, though, since e.g. +0 === -0 but their
+  // bit patterns are not identical.
+  } else if (isView(actual) && isView(expected) &&
+             pToString(actual) === pToString(expected) &&
+             !(actual instanceof Float32Array ||
+               actual instanceof Float64Array)) {
+    return compare(new Uint8Array(actual.buffer),
+                   new Uint8Array(expected.buffer)) === 0;
+
+  // 7.5 For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else if (isBuffer(actual) !== isBuffer(expected)) {
+    return false;
+  } else {
+    memos = memos || {actual: [], expected: []};
+
+    var actualIndex = memos.actual.indexOf(actual);
+    if (actualIndex !== -1) {
+      if (actualIndex === memos.expected.indexOf(expected)) {
+        return true;
+      }
+    }
+
+    memos.actual.push(actual);
+    memos.expected.push(expected);
+
+    return objEquiv(actual, expected, strict, memos);
+  }
+}
+
+function isArguments(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
+
+function objEquiv(a, b, strict, actualVisitedObjects) {
+  if (a === null || a === undefined || b === null || b === undefined)
+    return false;
+  // if one is a primitive, the other must be same
+  if (util.isPrimitive(a) || util.isPrimitive(b))
+    return a === b;
+  if (strict && Object.getPrototypeOf(a) !== Object.getPrototypeOf(b))
+    return false;
+  var aIsArgs = isArguments(a);
+  var bIsArgs = isArguments(b);
+  if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs))
+    return false;
+  if (aIsArgs) {
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return _deepEqual(a, b, strict);
+  }
+  var ka = objectKeys(a);
+  var kb = objectKeys(b);
+  var key, i;
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length !== kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] !== kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!_deepEqual(a[key], b[key], strict, actualVisitedObjects))
+      return false;
+  }
+  return true;
+}
+
+// 8. The non-equivalence assertion tests for any deep inequality.
+// assert.notDeepEqual(actual, expected, message_opt);
+
+assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected, false)) {
+    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
+  }
+};
+
+assert.notDeepStrictEqual = notDeepStrictEqual;
+function notDeepStrictEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected, true)) {
+    fail(actual, expected, message, 'notDeepStrictEqual', notDeepStrictEqual);
+  }
+}
+
+
+// 9. The strict equality assertion tests strict equality, as determined by ===.
+// assert.strictEqual(actual, expected, message_opt);
+
+assert.strictEqual = function strictEqual(actual, expected, message) {
+  if (actual !== expected) {
+    fail(actual, expected, message, '===', assert.strictEqual);
+  }
+};
+
+// 10. The strict non-equality assertion tests for strict inequality, as
+// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
+
+assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
+  if (actual === expected) {
+    fail(actual, expected, message, '!==', assert.notStrictEqual);
+  }
+};
+
+function expectedException(actual, expected) {
+  if (!actual || !expected) {
+    return false;
+  }
+
+  if (Object.prototype.toString.call(expected) == '[object RegExp]') {
+    return expected.test(actual);
+  }
+
+  try {
+    if (actual instanceof expected) {
+      return true;
+    }
+  } catch (e) {
+    // Ignore.  The instanceof check doesn't work for arrow functions.
+  }
+
+  if (Error.isPrototypeOf(expected)) {
+    return false;
+  }
+
+  return expected.call({}, actual) === true;
+}
+
+function _tryBlock(block) {
+  var error;
+  try {
+    block();
+  } catch (e) {
+    error = e;
+  }
+  return error;
+}
+
+function _throws(shouldThrow, block, expected, message) {
+  var actual;
+
+  if (typeof block !== 'function') {
+    throw new TypeError('"block" argument must be a function');
+  }
+
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = null;
+  }
+
+  actual = _tryBlock(block);
+
+  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
+            (message ? ' ' + message : '.');
+
+  if (shouldThrow && !actual) {
+    fail(actual, expected, 'Missing expected exception' + message);
+  }
+
+  var userProvidedMessage = typeof message === 'string';
+  var isUnwantedException = !shouldThrow && util.isError(actual);
+  var isUnexpectedException = !shouldThrow && actual && !expected;
+
+  if ((isUnwantedException &&
+      userProvidedMessage &&
+      expectedException(actual, expected)) ||
+      isUnexpectedException) {
+    fail(actual, expected, 'Got unwanted exception' + message);
+  }
+
+  if ((shouldThrow && actual && expected &&
+      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
+    throw actual;
+  }
+}
+
+// 11. Expected to throw an error:
+// assert.throws(block, Error_opt, message_opt);
+
+assert.throws = function(block, /*optional*/error, /*optional*/message) {
+  _throws(true, block, error, message);
+};
+
+// EXTENSION! This is annoying to write outside this module.
+assert.doesNotThrow = function(block, /*optional*/error, /*optional*/message) {
+  _throws(false, block, error, message);
+};
+
+assert.ifError = function(err) { if (err) throw err; };
+
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    if (hasOwn.call(obj, key)) keys.push(key);
+  }
+  return keys;
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"util/":12}],2:[function(require,module,exports){
 //protected helper class
 function _SubRange(low, high) {
     this.low = low;
@@ -144,7 +638,7 @@ DiscontinuousRange.prototype.clone = function () {
 
 module.exports = DiscontinuousRange;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 var undefined;
@@ -227,7 +721,193 @@ module.exports = function extend() {
 };
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],5:[function(require,module,exports){
 var util      = require('./util');
 var types     = require('./types');
 var sets      = require('./sets');
@@ -507,7 +1187,7 @@ module.exports = function(regexpStr) {
 
 module.exports.types = types;
 
-},{"./positions":4,"./sets":5,"./types":6,"./util":7}],4:[function(require,module,exports){
+},{"./positions":6,"./sets":7,"./types":8,"./util":9}],6:[function(require,module,exports){
 var types = require('./types');
 
 exports.wordBoundary = function() {
@@ -526,7 +1206,7 @@ exports.end = function() {
   return { type: types.POSITION, value: '$' };
 };
 
-},{"./types":6}],5:[function(require,module,exports){
+},{"./types":8}],7:[function(require,module,exports){
 var types = require('./types');
 
 var INTS = function() {
@@ -610,7 +1290,7 @@ exports.anyChar = function() {
   return { type: types.SET, set: NOTANYCHAR(), not: true };
 };
 
-},{"./types":6}],6:[function(require,module,exports){
+},{"./types":8}],8:[function(require,module,exports){
 module.exports = {
     ROOT       : 0
   , GROUP      : 1
@@ -622,7 +1302,7 @@ module.exports = {
   , CHAR       : 7
 };
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var types = require('./types');
 var sets  = require('./sets');
 
@@ -730,1126 +1410,7 @@ exports.error = function(regexp, msg) {
   throw new SyntaxError('Invalid regular expression: /' + regexp + '/: ' + msg);
 };
 
-},{"./sets":5,"./types":6}],8:[function(require,module,exports){
-"use strict";
-
-var constants = {
-  MAX_INT: 10000
-};
-
-module.exports = constants;
-
-},{}],9:[function(require,module,exports){
-"use strict";
-
-var utils = require("../utils");
-
-var arrayGens = {};
-arrayGens.arrayOf = function (gen) {
-    // yeah, unreadble, but fun :)
-    return function () {
-        var size = arguments[0] === undefined ? 10 : arguments[0];
-        return utils.range(utils.random(0, size)).map(function (i) {
-            return gen(i);
-        });
-    };
-};
-
-module.exports = arrayGens;
-
-},{"../utils":19}],10:[function(require,module,exports){
-"use strict";
-
-var utils = require("../utils");
-var basicGens = {};
-var alphaNums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-var getAlphaChars = function () {
-    return alphaNums.substr(0, 51);
-};
-var constants = require("./../constants.js");
-
-/*creates a Generator which returns a random element from a list (array in our case)*/
-var elements = function (items) {
-    return function () {
-        return items[utils.random(0, items.length - 1)];
-    };
-};
-
-basicGens.elements = elements;
-
-/*Generate a random byte*/
-basicGens.byte = function () {
-    return Math.floor(Math.random() * 256);
-};
-
-/*Generate a random character*/
-basicGens.char = function () {
-    return String.fromCharCode(basicGens.byte());
-};
-
-/*Generate a alpha char*/
-basicGens.char.alpha = function () {
-    return basicGens.elements(getAlphaChars())();
-};
-
-/*Generate a alpha numeric character*/
-basicGens.char.alphaNum = function () {
-    return basicGens.elements(alphaNums)();
-};
-
-/*Generate a random ascii character*/
-basicGens.char.ascii = function () {
-    return String.fromCharCode(basicGens.elements(utils.range(32, 126))());
-};
-
-/*Generate a random boolean (true or false)*/
-basicGens.bool = function () {
-    return basicGens.elements([true, false])();
-};
-
-/*Generate one of the falsy values*/
-basicGens.falsy = function () {
-    return basicGens.elements([false, null, undefined, 0, "", NaN])();
-};
-
-/*Generate a random number between min and max (both inclusive)*/
-basicGens.random = function () {
-    var min = arguments[0] === undefined ? constants.MAX_INT * -1 : arguments[0];
-    var max = arguments[1] === undefined ? constants.MAX_INT : arguments[1];
-    return utils.random(min, max, true);
-};
-
-/*Returns a generators which always generates the given val*/
-basicGens.value = function (val) {
-    return function () {
-        return val;
-    };
-};
-
-module.exports = basicGens;
-
-},{"../utils":19,"./../constants.js":8}],11:[function(require,module,exports){
-"use strict";
-
-var utils = require("../utils");
-var fnGens = {};
-
-fnGens.fn = function () {
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-    }
-
-    var returnGenerator = utils.last(args);
-    return utils.memoize(function (size) {
-        if (utils.isFunction(returnGenerator)) {
-            return returnGenerator(size);
-        }
-
-        return returnGenerator;
-    });
-};
-
-fnGens.fun = fnGens["function"] = fnGens.fn;
-module.exports = fnGens;
-
-},{"../utils":19}],12:[function(require,module,exports){
-"use strict";
-
-// gets all generators together into a single module
-var utils = require("../utils");
-var stringGen = require("./string.js");
-var numberGen = require("./number.js");
-var arrayGen = require("./array.js");
-var basicGen = require("./basic.js");
-var functionGen = require("./function.js");
-var objectGen = require("./object.js");
-var miscGen = require("./misc.js");
-
-var sample = function (gen) {
-    var times = arguments[1] === undefined ? 100 : arguments[1];
-
-    var results = [];
-    for (var i = 0; i < times; i++) {
-        results.push(gen(i));
-    }
-
-    return results;
-};
-
-var generators = {
-    sample: sample
-};
-
-generators.extend = function () {
-    for (var _len = arguments.length, obj = Array(_len), _key = 0; _key < _len; _key++) {
-        obj[_key] = arguments[_key];
-    }
-
-    if (typeof obj.join !== "function") {
-        obj = [obj];
-    }
-    utils.extend.apply(utils, [generators].concat(obj));
-};
-
-generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);
-module.exports = generators;
-
-},{"../utils":19,"./array.js":9,"./basic.js":10,"./function.js":11,"./misc.js":13,"./number.js":14,"./object.js":15,"./string.js":16}],13:[function(require,module,exports){
-"use strict";
-
-require("../polyfills.js");
-var assert = require("assert");
-var basicGen = require("./basic");
-var numberGen = require("./number");
-var stringGen = require("./string");
-
-var miscGens = {};
-
-miscGens.suchThat = function (filterFn, gen) {
-    var maxIterations = arguments[2] === undefined ? 10 : arguments[2];
-
-    return function (size) {
-        var generatedValue = gen(size);
-        var iterationCount = 0;
-        while (filterFn(generatedValue) !== true && iterationCount < maxIterations) {
-            generatedValue = gen(size);
-            iterationCount += 1;
-            size += 1;
-        }
-
-        ;
-        assert(filterFn(generatedValue), "could not a generate value as per filter function after " + maxIterations);
-
-        return generatedValue;
-    };
-};
-
-/*Picks a random generator from a list of generators*/
-miscGens.oneOf = function () {
-    for (var _len = arguments.length, gens = Array(_len), _key = 0; _key < _len; _key++) {
-        gens[_key] = arguments[_key];
-    }
-
-    return basicGen.elements(gens)();
-};
-
-/*
- * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
- * pairs: [[2 gen.int], [3 gen.int.between(0, 100)], [1 gen.bool]]
- */
-// TODO - need assertions for pairs passed
-miscGens.frequency = function (pairs) {
-    var gensSpread = pairs.reduce(function (acc, pair) {
-        return acc.concat(new Array(pair[0]).fill(pair[1]));
-    }, []);
-
-    return basicGen.elements(gensSpread)();
-};
-
-miscGens.any = function () {
-    var objectGen = require("./object.js");
-
-    var gensWithWeights = [[4, numberGen.int], [4, numberGen.int.positive], [2, numberGen.int.large], [4, basicGen.bool], [4, stringGen.string], [4, stringGen.string.ascii], [4, stringGen.string.alphaNum], [4, stringGen.string.alpha], [1, objectGen.object]];
-
-    return miscGens.frequency(gensWithWeights)();
-};
-
-/*
- * Returns any one of the following generators with given weights
- * number.int ->
- * number.int.positive ->
- * bool ->
- * string ->
- * string.ascii ->
- * string.alphaNum ->
- */
-miscGens.any.simple = function () {
-    var gensWithWeights = [[4, numberGen.int], [4, numberGen.int.positive], [4, basicGen.bool], [4, stringGen.string], [4, stringGen.string.ascii], [4, stringGen.string.alphaNum], [4, stringGen.string.alpha]];
-
-    return miscGens.frequency(gensWithWeights)();
-};
-
-// random date generator
-miscGens.date = function () {
-    return new Date(numberGen.uint.large());
-};
-
-module.exports = miscGens;
-
-},{"../polyfills.js":18,"./basic":10,"./number":14,"./object.js":15,"./string":16,"assert":20}],14:[function(require,module,exports){
-"use strict";
-
-// require('babel/polyfill');
-var basic = require("./basic");
-var utils = require("../utils");
-
-var numberGen = {};
-
-/*Generate an integer upto size. Non negative*/
-numberGen.intUpto = function () {
-	var size = arguments[0] === undefined ? 100 : arguments[0];
-	return Math.floor(Math.random() * size);
-};
-
-/*Generate an integer bounded by [-size, size]*/
-numberGen.int = function () {
-	var size = arguments[0] === undefined ? 100 : arguments[0];
-	return basic.elements([-1, 1])() * numberGen.intUpto(size);
-};
-
-// numberGen.int.shrink = function *(val) {
-//     var limit = Math.abs(val);
-//     var shrinkedVal = limit - 1;
-
-//     while(Math.abs(shrinkedVal) !== 0) {
-//         yield shrinkedVal;
-
-//         if(shrinkedVal >= 0) {
-//             shrinkedVal = -shrinkedVal;
-//         } else {
-//             shrinkedVal = -(shrinkedVal + 1);
-//         }
-//     }
-
-//     yield shrinkedVal; // for zero case
-// };
-
-/*Generate a positive Integer*/
-numberGen.int.positive = function () {
-	var size = arguments[0] === undefined ? 100 : arguments[0];
-	return numberGen.intUpto(size) + 1;
-};
-
-/*Choose an integer in the range [min, max], both inclusive in search*/
-numberGen.int.choose = numberGen.int.between = function (min, max) {
-	return basic.elements(utils.range(min, max + 1));
-};
-
-/*Generate a float bounded by [-size, size]*/
-numberGen.float = function () {
-	var size = arguments[0] === undefined ? 100 : arguments[0];
-	return basic.random() * size;
-};
-
-/*Generate a large integer*/
-numberGen.int.large = function () {
-	return Math.floor(Math.random() * Number.MAX_VALUE);
-};
-
-/*Generate an unsigned integer*/
-// TODO - no idea why it has to be upto size*size
-numberGen.uint = function () {
-	var size = arguments[0] === undefined ? 100 : arguments[0];
-	return numberGen.intUpto(size * size);
-};
-
-/*Generate a large unsigned integer*/
-numberGen.uint.large = function () {
-	return Math.floor(Math.random() * Number.MAX_VALUE);
-};
-
-module.exports = numberGen;
-
-},{"../utils":19,"./basic":10}],15:[function(require,module,exports){
-"use strict";
-
-var assert = require("assert");
-var utils = require("../utils");
-var stringGen = require("./string.js");
-var miscGen = require("./misc.js");
-
-var objectGens = {};
-
-// generate a random object.
-objectGens.object = function () {
-    var maxProps = 10;
-    var numProps = utils.random(1, maxProps);
-    var maxKeyLength = 10;
-    var keyGenerator = miscGen.suchThat(function (str) {
-        return str.length > 0;
-    }, stringGen.string);
-    var valSizeMax = 20;
-    var resultObject = {};
-
-    for (var i = 0; i < numProps; i++) {
-        var key = keyGenerator(maxKeyLength);
-        var val = miscGen.any(valSizeMax);
-        resultObject[key] = val;
-    }
-
-    return resultObject;
-};
-
-function generateObjectOfShape(shape) {
-    var result = {};
-    var size = 10;
-    for (var prop in shape) {
-        if (shape.hasOwnProperty(prop)) {
-            if (typeof shape[prop] === "function") {
-                result[prop] = shape[prop](size);
-            } else if (utils.isObject(shape[prop])) {
-                result[prop] = generateObjectOfShape(shape[prop]);
-            } else {
-                result[prop] = shape[prop];
-            }
-        }
-    }
-
-    return result;
-}
-
-/*Generateo an object of given shape*/
-objectGens.object.ofShape = function (shape) {
-    assert(utils.isObject(shape), "Need an argument of Object type");
-
-    return generateObjectOfShape.bind(undefined, shape);
-};
-
-module.exports = objectGens;
-
-},{"../utils":19,"./misc.js":13,"./string.js":16,"assert":20}],16:[function(require,module,exports){
-"use strict";
-
-var assert = require("assert");
-var ret = require("ret");
-var types = ret.types;
-var DRange = require("discontinuous-range");
-
-var utils = require("../utils");
-var basicGen = require("./basic.js");
-var arrayGen = require("./array.js");
-
-var stringGens = {};
-
-var regexOptions = {
-    ignoreCase: false,
-    multiline: false,
-    regexRepetitionMax: 100 // max number of characters to generate for '*' like expressions
-};
-
-var defaultRange = new DRange(32, 126);
-
-stringGens.string = function () {
-    var size = arguments[0] === undefined ? 10 : arguments[0];
-
-    return arrayGen.arrayOf(basicGen.char)(size).join("");
-};
-
-stringGens.string.ascii = function () {
-    var size = arguments[0] === undefined ? 10 : arguments[0];
-
-    return arrayGen.arrayOf(basicGen.char.ascii)(size).join("");
-};
-
-/*Generate a string of alphabets*/
-stringGens.string.alpha = function () {
-    var size = arguments[0] === undefined ? 10 : arguments[0];
-    return arrayGen.arrayOf(basicGen.char.alpha)(size).join("");
-};
-
-/*Generate a string of alpha numeric characters*/
-stringGens.string.alphaNum = function () {
-    var size = arguments[0] === undefined ? 10 : arguments[0];
-    return arrayGen.arrayOf(basicGen.char.alphaNum)(size).join("");
-};
-
-var getTokenRange = function (token) {
-
-    switch (token.type) {
-        case types.CHAR:
-            return new DRange(token.value);
-        case types.SET:
-            var drange = token.set.reduce(function (acc, tokenItem) {
-                return acc.add(getTokenRange(tokenItem));
-            }, new DRange());
-
-            // case like /ab\D/ , which means all not digits
-            if (token.not) {
-                drange = defaultRange.clone().subtract(drange);
-            }
-
-            return drange;
-        case types.RANGE:
-            return new DRange(token.from, token.to);
-        default:
-            return new Error("Can expand token: ", token);
-    }
-};
-
-var getChar = function (charIntVal) {
-    var ignoreCase = arguments[1] === undefined ? false : arguments[1];
-
-    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
-    return String.fromCharCode(charCode);
-};
-
-var generateRandomValFromRange = function (drange) {
-    var randomRange = utils.random(0, drange.ranges.length - 1);
-    return getChar(utils.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
-};
-
-var otherCase = function (charIntVal) {
-    if (charIntVal >= 97 && charIntVal <= 122) {
-        return charIntVal - 32;
-    }
-
-    if (charIntVal >= 65 && charIntVal <= 90) {
-        return charIntVal + 32;
-    }
-
-    return charIntVal;
-};
-
-var generateMatchingString = function (token, groups) {
-    var str = "";
-
-    switch (token.type) {
-        case types.ROOT:
-        case types.GROUP:
-            if (token.notFollowedBy) {
-                return "";
-            }
-            // Insert placeholder until group string is generated.
-            if (token.remember && token.groupNumber === undefined) {
-                token.groupNumber = groups.push(null) - 1;
-            }
-
-            var stack = token.stack;
-
-            if (token.options) {
-                var randomIndex = utils.random(0, token.options.length - 1);
-                stack = token.options[randomIndex];
-            }
-
-            str = stack.reduce(function (acc, stackItem) {
-                return acc + generateMatchingString(stackItem, groups);
-            }, "");
-
-            if (token.remember) {
-                groups[token.groupNumber] = str;
-            }
-
-            return str;
-        case types.POSITION:
-            // ^, $
-            // TODO
-            return "";
-        case types.SET:
-            // ., \d, \D, \w, \W, \s, \S
-            var tokenRange = getTokenRange(token);
-            return generateRandomValFromRange(tokenRange) || "";
-        case types.RANGE:
-            // don't know when this happens
-            return getChar(utils.random(token.from, token.to), regexOptions.ignoreCase);
-        case types.REPETITION:
-            // *, {1, }, {2, 6}
-            var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
-
-            str = "";
-
-            for (var i in utils.range(0, stringRandomLength)) {
-                str += generateMatchingString(token.value, groups);
-            }
-
-            return str;
-        case types.REFERENCE:
-            return groups[token.value - 1] || "";
-        case types.CHAR:
-            return getChar(token.value, regexOptions.ignoreCase);
-        default:
-    }
-};
-
-stringGens.string.matches = function (pattern, options) {
-    assert(utils.isString(pattern) || pattern instanceof RegExp, "Expect a RegExp object or regular expression string as input");
-
-    var regexSource = pattern;
-    if (utils.isString(pattern)) {
-        if (options && options.i) {
-            regexOptions.ignoreCase = true;
-        }
-
-        if (options && options.m) {
-            regexOptions.multiline = true;
-        }
-    } else {
-        stringGens.string.ignoreCase = pattern.ignoreCase;
-        stringGens.string.multiline = pattern.multiline;
-        regexSource = pattern.source;
-    }
-
-    var tokens = ret(regexSource);
-    return function () {
-        return generateMatchingString(tokens, []);
-    };
-};
-
-module.exports = stringGens;
-
-},{"../utils":19,"./array.js":9,"./basic.js":10,"assert":20,"discontinuous-range":1,"ret":3}],17:[function(require,module,exports){
-"use strict";
-
-// require('babel/polyfill');
-var assert = require("assert");
-var gen = require("./generators");
-
-var jssmartcheck = { gen: gen };
-
-jssmartcheck.forAll = function () {
-    for (var _len = arguments.length, gens = Array(_len), _key = 0; _key < _len; _key++) {
-        gens[_key] = arguments[_key];
-    }
-
-    assert(gens.every(function (ranGen) {
-        return typeof ranGen === "function";
-    }), "Expect all generators to be function references");
-
-    jssmartcheck.forallGens = gens;
-    return jssmartcheck;
-};
-
-var getErrorMessage = function (numTests, fail) {
-    return JSON.stringify({
-        result: false,
-        numTests: numTests,
-        fail: fail
-    });
-};
-
-jssmartcheck.check = function (f) {
-    var times = arguments[1] === undefined ? 100 : arguments[1];
-    var seed = arguments[2] === undefined ? Math.random() * 1000 : arguments[2];
-
-    jssmartcheck.seed = seed;
-    assert(typeof f === "function", "check expects a property function");
-
-    for (var i = 0; i < times; i++) {
-        var sampleValues;
-
-        (function (i) {
-            sampleValues = jssmartcheck.forallGens.map(function (ranGen) {
-                return ranGen(i);
-            });
-
-            assert(f.apply(undefined, sampleValues) === true, getErrorMessage(i, sampleValues));
-        })(i);
-    }
-
-    console.log({ result: true, numTests: times, seed: seed });
-};
-
-module.exports = jssmartcheck;
-
-},{"./generators":12,"assert":20}],18:[function(require,module,exports){
-"use strict";
-
-if (!Array.prototype.fill) {
-  Array.prototype.fill = function (value) {
-
-    // Steps 1-2.
-    if (this == null) {
-      throw new TypeError("this is null or not defined");
-    }
-
-    var O = Object(this);
-
-    // Steps 3-5.
-    var len = O.length >>> 0;
-
-    // Steps 6-7.
-    var start = arguments[1];
-    var relativeStart = start >> 0;
-
-    // Step 8.
-    var k = relativeStart < 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
-
-    // Steps 9-10.
-    var end = arguments[2];
-    var relativeEnd = end === undefined ? len : end >> 0;
-
-    // Step 11.
-    var final = relativeEnd < 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
-
-    // Step 12.
-    while (k < final) {
-      O[k] = value;
-      k++;
-    }
-
-    // Step 13.
-    return O;
-  };
-}
-
-},{}],19:[function(require,module,exports){
-"use strict";
-
-var _extend = require("extend");
-
-// generate a random number between min and max.
-function _getRandomNumber(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function random(_x, _x2, isFloat) {
-    var min = arguments[0] === undefined ? 0 : arguments[0];
-    var max = arguments[1] === undefined ? Number.MAX_VALUE : arguments[1];
-
-    return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
-}
-
-function choose(elements) {
-    return elements[random(0, elements.length - 1)];
-}
-
-function isAscii(str) {
-    return /^[\x00-\x7F]*$/.test(str);
-}
-
-// generate a range of values (array)
-function range(min, max) {
-    var lowLimit = max ? min : 0,
-        upLimit = max ? max : min;
-    return Array.apply(0, Array(upLimit - lowLimit)).map(function (x, y) {
-        return y + lowLimit;
-    });
-}
-
-function isObject(value) {
-    var type = typeof value;
-    return type === "function" || value && type == "object" || false;
-}
-
-function isFunction(value) {
-    return typeof value === "function" || false;
-}
-
-function isString(value) {
-    return !!value.substring;
-}
-
-function extend() {
-    for (var _len = arguments.length, obj = Array(_len), _key = 0; _key < _len; _key++) {
-        obj[_key] = arguments[_key];
-    }
-
-    return _extend.apply(_extend, [true].concat(obj));
-}
-
-function last(array) {
-    return array[array.length - 1];
-}
-
-//https://github.com/addyosmani/memoize.js
-function memoize(func) {
-    var stringifyJson = JSON.stringify,
-        cache = {};
-
-    var cachedfun = function cachedfun() {
-        var hash = stringifyJson(arguments);
-        return hash in cache ? cache[hash] : cache[hash] = func.apply(this, arguments);
-    };
-
-    cachedfun.__cache = (function () {
-        if (!cache.remove) {
-            cache.remove = function () {
-                var hash = stringifyJson(arguments);
-                return delete cache[hash];
-            };
-        }
-        return cache;
-    }).call(this);
-
-    return cachedfun;
-}
-
-function times(n, iterator) {
-    var accum = Array(Math.max(0, n));
-    for (var i = 0; i < n; i++) {
-        accum[i] = iterator.call();
-    }
-
-    return accum;
-}
-
-var utils = {
-    choose: choose,
-    isAscii: isAscii,
-    random: random,
-    range: range,
-    isObject: isObject,
-    isFunction: isFunction,
-    isString: isString,
-    extend: extend,
-    last: last,
-    memoize: memoize,
-    times: times
-};
-
-module.exports = utils;
-
-},{"extend":2}],20:[function(require,module,exports){
-// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
-//
-// THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
-//
-// Originally from narwhal.js (http://narwhaljs.org)
-// Copyright (c) 2009 Thomas Robinson <280north.com>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the 'Software'), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// when used in node, this will actually load the util module we depend on
-// versus loading the builtin util module as happens otherwise
-// this is a bug in node module loading as far as I am concerned
-var util = require('util/');
-
-var pSlice = Array.prototype.slice;
-var hasOwn = Object.prototype.hasOwnProperty;
-
-// 1. The assert module provides functions that throw
-// AssertionError's when particular conditions are not met. The
-// assert module must conform to the following interface.
-
-var assert = module.exports = ok;
-
-// 2. The AssertionError is defined in assert.
-// new assert.AssertionError({ message: message,
-//                             actual: actual,
-//                             expected: expected })
-
-assert.AssertionError = function AssertionError(options) {
-  this.name = 'AssertionError';
-  this.actual = options.actual;
-  this.expected = options.expected;
-  this.operator = options.operator;
-  if (options.message) {
-    this.message = options.message;
-    this.generatedMessage = false;
-  } else {
-    this.message = getMessage(this);
-    this.generatedMessage = true;
-  }
-  var stackStartFunction = options.stackStartFunction || fail;
-
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, stackStartFunction);
-  }
-  else {
-    // non v8 browsers so we can have a stacktrace
-    var err = new Error();
-    if (err.stack) {
-      var out = err.stack;
-
-      // try to strip useless frames
-      var fn_name = stackStartFunction.name;
-      var idx = out.indexOf('\n' + fn_name);
-      if (idx >= 0) {
-        // once we have located the function frame
-        // we need to strip out everything before it (and its line)
-        var next_line = out.indexOf('\n', idx + 1);
-        out = out.substring(next_line + 1);
-      }
-
-      this.stack = out;
-    }
-  }
-};
-
-// assert.AssertionError instanceof Error
-util.inherits(assert.AssertionError, Error);
-
-function replacer(key, value) {
-  if (util.isUndefined(value)) {
-    return '' + value;
-  }
-  if (util.isNumber(value) && !isFinite(value)) {
-    return value.toString();
-  }
-  if (util.isFunction(value) || util.isRegExp(value)) {
-    return value.toString();
-  }
-  return value;
-}
-
-function truncate(s, n) {
-  if (util.isString(s)) {
-    return s.length < n ? s : s.slice(0, n);
-  } else {
-    return s;
-  }
-}
-
-function getMessage(self) {
-  return truncate(JSON.stringify(self.actual, replacer), 128) + ' ' +
-         self.operator + ' ' +
-         truncate(JSON.stringify(self.expected, replacer), 128);
-}
-
-// At present only the three keys mentioned above are used and
-// understood by the spec. Implementations or sub modules can pass
-// other keys to the AssertionError's constructor - they will be
-// ignored.
-
-// 3. All of the following functions must throw an AssertionError
-// when a corresponding condition is not met, with a message that
-// may be undefined if not provided.  All assertion methods provide
-// both the actual and expected values to the assertion error for
-// display purposes.
-
-function fail(actual, expected, message, operator, stackStartFunction) {
-  throw new assert.AssertionError({
-    message: message,
-    actual: actual,
-    expected: expected,
-    operator: operator,
-    stackStartFunction: stackStartFunction
-  });
-}
-
-// EXTENSION! allows for well behaved errors defined elsewhere.
-assert.fail = fail;
-
-// 4. Pure assertion tests whether a value is truthy, as determined
-// by !!guard.
-// assert.ok(guard, message_opt);
-// This statement is equivalent to assert.equal(true, !!guard,
-// message_opt);. To test strictly for the value true, use
-// assert.strictEqual(true, guard, message_opt);.
-
-function ok(value, message) {
-  if (!value) fail(value, true, message, '==', assert.ok);
-}
-assert.ok = ok;
-
-// 5. The equality assertion tests shallow, coercive equality with
-// ==.
-// assert.equal(actual, expected, message_opt);
-
-assert.equal = function equal(actual, expected, message) {
-  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
-};
-
-// 6. The non-equality assertion tests for whether two objects are not equal
-// with != assert.notEqual(actual, expected, message_opt);
-
-assert.notEqual = function notEqual(actual, expected, message) {
-  if (actual == expected) {
-    fail(actual, expected, message, '!=', assert.notEqual);
-  }
-};
-
-// 7. The equivalence assertion tests a deep equality relation.
-// assert.deepEqual(actual, expected, message_opt);
-
-assert.deepEqual = function deepEqual(actual, expected, message) {
-  if (!_deepEqual(actual, expected)) {
-    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
-  }
-};
-
-function _deepEqual(actual, expected) {
-  // 7.1. All identical values are equivalent, as determined by ===.
-  if (actual === expected) {
-    return true;
-
-  } else if (util.isBuffer(actual) && util.isBuffer(expected)) {
-    if (actual.length != expected.length) return false;
-
-    for (var i = 0; i < actual.length; i++) {
-      if (actual[i] !== expected[i]) return false;
-    }
-
-    return true;
-
-  // 7.2. If the expected value is a Date object, the actual value is
-  // equivalent if it is also a Date object that refers to the same time.
-  } else if (util.isDate(actual) && util.isDate(expected)) {
-    return actual.getTime() === expected.getTime();
-
-  // 7.3 If the expected value is a RegExp object, the actual value is
-  // equivalent if it is also a RegExp object with the same source and
-  // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
-  } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
-    return actual.source === expected.source &&
-           actual.global === expected.global &&
-           actual.multiline === expected.multiline &&
-           actual.lastIndex === expected.lastIndex &&
-           actual.ignoreCase === expected.ignoreCase;
-
-  // 7.4. Other pairs that do not both pass typeof value == 'object',
-  // equivalence is determined by ==.
-  } else if (!util.isObject(actual) && !util.isObject(expected)) {
-    return actual == expected;
-
-  // 7.5 For all other Object pairs, including Array objects, equivalence is
-  // determined by having the same number of owned properties (as verified
-  // with Object.prototype.hasOwnProperty.call), the same set of keys
-  // (although not necessarily the same order), equivalent values for every
-  // corresponding key, and an identical 'prototype' property. Note: this
-  // accounts for both named and indexed properties on Arrays.
-  } else {
-    return objEquiv(actual, expected);
-  }
-}
-
-function isArguments(object) {
-  return Object.prototype.toString.call(object) == '[object Arguments]';
-}
-
-function objEquiv(a, b) {
-  if (util.isNullOrUndefined(a) || util.isNullOrUndefined(b))
-    return false;
-  // an identical 'prototype' property.
-  if (a.prototype !== b.prototype) return false;
-  // if one is a primitive, the other must be same
-  if (util.isPrimitive(a) || util.isPrimitive(b)) {
-    return a === b;
-  }
-  var aIsArgs = isArguments(a),
-      bIsArgs = isArguments(b);
-  if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs))
-    return false;
-  if (aIsArgs) {
-    a = pSlice.call(a);
-    b = pSlice.call(b);
-    return _deepEqual(a, b);
-  }
-  var ka = objectKeys(a),
-      kb = objectKeys(b),
-      key, i;
-  // having the same number of owned properties (keys incorporates
-  // hasOwnProperty)
-  if (ka.length != kb.length)
-    return false;
-  //the same set of keys (although not necessarily the same order),
-  ka.sort();
-  kb.sort();
-  //~~~cheap key test
-  for (i = ka.length - 1; i >= 0; i--) {
-    if (ka[i] != kb[i])
-      return false;
-  }
-  //equivalent values for every corresponding key, and
-  //~~~possibly expensive deep test
-  for (i = ka.length - 1; i >= 0; i--) {
-    key = ka[i];
-    if (!_deepEqual(a[key], b[key])) return false;
-  }
-  return true;
-}
-
-// 8. The non-equivalence assertion tests for any deep inequality.
-// assert.notDeepEqual(actual, expected, message_opt);
-
-assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
-  if (_deepEqual(actual, expected)) {
-    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
-  }
-};
-
-// 9. The strict equality assertion tests strict equality, as determined by ===.
-// assert.strictEqual(actual, expected, message_opt);
-
-assert.strictEqual = function strictEqual(actual, expected, message) {
-  if (actual !== expected) {
-    fail(actual, expected, message, '===', assert.strictEqual);
-  }
-};
-
-// 10. The strict non-equality assertion tests for strict inequality, as
-// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
-
-assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
-  if (actual === expected) {
-    fail(actual, expected, message, '!==', assert.notStrictEqual);
-  }
-};
-
-function expectedException(actual, expected) {
-  if (!actual || !expected) {
-    return false;
-  }
-
-  if (Object.prototype.toString.call(expected) == '[object RegExp]') {
-    return expected.test(actual);
-  } else if (actual instanceof expected) {
-    return true;
-  } else if (expected.call({}, actual) === true) {
-    return true;
-  }
-
-  return false;
-}
-
-function _throws(shouldThrow, block, expected, message) {
-  var actual;
-
-  if (util.isString(expected)) {
-    message = expected;
-    expected = null;
-  }
-
-  try {
-    block();
-  } catch (e) {
-    actual = e;
-  }
-
-  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
-            (message ? ' ' + message : '.');
-
-  if (shouldThrow && !actual) {
-    fail(actual, expected, 'Missing expected exception' + message);
-  }
-
-  if (!shouldThrow && expectedException(actual, expected)) {
-    fail(actual, expected, 'Got unwanted exception' + message);
-  }
-
-  if ((shouldThrow && actual && expected &&
-      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
-    throw actual;
-  }
-}
-
-// 11. Expected to throw an error:
-// assert.throws(block, Error_opt, message_opt);
-
-assert.throws = function(block, /*optional*/error, /*optional*/message) {
-  _throws.apply(this, [true].concat(pSlice.call(arguments)));
-};
-
-// EXTENSION! This is annoying to write outside this module.
-assert.doesNotThrow = function(block, /*optional*/message) {
-  _throws.apply(this, [false].concat(pSlice.call(arguments)));
-};
-
-assert.ifError = function(err) { if (err) {throw err;}};
-
-var objectKeys = Object.keys || function (obj) {
-  var keys = [];
-  for (var key in obj) {
-    if (hasOwn.call(obj, key)) keys.push(key);
-  }
-  return keys;
-};
-
-},{"util/":24}],21:[function(require,module,exports){
+},{"./sets":7,"./types":8}],10:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -1874,73 +1435,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],22:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    draining = true;
-    var currentQueue;
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
-        }
-        len = queue.length;
-    }
-    draining = false;
-}
-process.nextTick = function (fun) {
-    queue.push(fun);
-    if (!draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],23:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],24:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2530,5 +2032,874 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":23,"_process":22,"inherits":21}]},{},[17])(17)
+},{"./support/isBuffer":11,"_process":4,"inherits":10}],13:[function(require,module,exports){
+"use strict";
+
+var constants = {
+  MAX_INT: 10000
+};
+
+module.exports = constants;
+
+},{}],14:[function(require,module,exports){
+"use strict";
+
+var utils = require("../utils");
+
+var arrayGens = {};
+arrayGens.arrayOf = function (gen) {
+    // yeah, unreadble, but fun :)
+    return function () {
+        var size = arguments[0] === undefined ? 10 : arguments[0];
+        return utils.range(utils.random(0, size)).map(function (i) {
+            return gen(i);
+        });
+    };
+};
+
+module.exports = arrayGens;
+
+},{"../utils":25}],15:[function(require,module,exports){
+"use strict";
+
+var utils = require("../utils");
+var basicGens = {};
+var alphaNums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+var getAlphaChars = function () {
+    return alphaNums.substr(0, 51);
+};
+var constants = require("./../constants.js");
+
+/*creates a Generator which returns a random element from a list (array in our case)*/
+var elements = function (items) {
+    return function () {
+        return items[utils.random(0, items.length - 1)];
+    };
+};
+
+basicGens.elements = elements;
+
+/*Generate a random byte*/
+basicGens.byte = function () {
+    return Math.floor(Math.random() * 256);
+};
+
+/*Generate a random character*/
+basicGens.char = function () {
+    return String.fromCharCode(basicGens.byte());
+};
+
+/*Generate a alpha char*/
+basicGens.char.alpha = function () {
+    return basicGens.elements(getAlphaChars())();
+};
+
+/*Generate a alpha numeric character*/
+basicGens.char.alphaNum = function () {
+    return basicGens.elements(alphaNums)();
+};
+
+/*Generate a random ascii character*/
+basicGens.char.ascii = function () {
+    return String.fromCharCode(basicGens.elements(utils.range(32, 126))());
+};
+
+/*Generate a random boolean (true or false)*/
+basicGens.bool = function () {
+    return basicGens.elements([true, false])();
+};
+
+/*Generate one of the falsy values*/
+basicGens.falsy = function () {
+    return basicGens.elements([false, null, undefined, 0, "", NaN])();
+};
+
+/*Generate a random number between min and max (both inclusive)*/
+basicGens.random = function () {
+    var min = arguments[0] === undefined ? constants.MAX_INT * -1 : arguments[0];
+    var max = arguments[1] === undefined ? constants.MAX_INT : arguments[1];
+    return utils.random(min, max, true);
+};
+
+/*Returns a generators which always generates the given val*/
+basicGens.value = function (val) {
+    return function () {
+        return val;
+    };
+};
+
+module.exports = basicGens;
+
+},{"../utils":25,"./../constants.js":13}],16:[function(require,module,exports){
+"use strict";
+
+var utils = require("../utils");
+var fnGens = {};
+
+fnGens.fn = function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+    }
+
+    var returnGenerator = utils.last(args);
+    return utils.memoize(function (size) {
+        if (utils.isFunction(returnGenerator)) {
+            return returnGenerator(size);
+        }
+
+        return returnGenerator;
+    });
+};
+
+fnGens.fun = fnGens["function"] = fnGens.fn;
+module.exports = fnGens;
+
+},{"../utils":25}],17:[function(require,module,exports){
+"use strict";
+
+// gets all generators together into a single module
+var utils = require("../utils");
+var stringGen = require("./string.js");
+var numberGen = require("./number.js");
+var arrayGen = require("./array.js");
+var basicGen = require("./basic.js");
+var functionGen = require("./function.js");
+var objectGen = require("./object.js");
+var miscGen = require("./misc.js");
+
+var _require = require("../get_random_vals");
+
+var getRandomVals = _require.getRandomVals;
+
+var sample = function (gen) {
+    var times = arguments[1] === undefined ? 100 : arguments[1];
+    return getRandomVals(gen, times);
+};
+
+var generators = {
+    sample: sample
+};
+
+generators.extend = function () {
+    for (var _len = arguments.length, obj = Array(_len), _key = 0; _key < _len; _key++) {
+        obj[_key] = arguments[_key];
+    }
+
+    if (typeof obj.join !== "function") {
+        obj = [obj];
+    }
+    utils.extend.apply(utils, [generators].concat(obj));
+};
+
+generators.extend(stringGen, numberGen, arrayGen, basicGen, functionGen, objectGen, miscGen);
+module.exports = generators;
+
+},{"../get_random_vals":22,"../utils":25,"./array.js":14,"./basic.js":15,"./function.js":16,"./misc.js":18,"./number.js":19,"./object.js":20,"./string.js":21}],18:[function(require,module,exports){
+"use strict";
+
+require("../polyfills.js");
+var assert = require("assert");
+var basicGen = require("./basic");
+var numberGen = require("./number");
+var stringGen = require("./string");
+
+var miscGens = {};
+
+miscGens.suchThat = function (filterFn, gen) {
+    var maxIterations = arguments[2] === undefined ? 10 : arguments[2];
+
+    return function (size) {
+        var generatedValue = gen(size);
+        var iterationCount = 0;
+        while (filterFn(generatedValue) !== true && iterationCount < maxIterations) {
+            generatedValue = gen(size);
+            iterationCount += 1;
+            size += 1;
+        }
+
+        ;
+        assert(filterFn(generatedValue), "could not a generate value as per filter function after " + maxIterations);
+
+        return generatedValue;
+    };
+};
+
+/*Picks a random generator from a list of generators*/
+miscGens.oneOf = function () {
+    for (var _len = arguments.length, gens = Array(_len), _key = 0; _key < _len; _key++) {
+        gens[_key] = arguments[_key];
+    }
+
+    return basicGen.elements(gens)();
+};
+
+/*
+ * Choose a generator from the pairs provided. The pair consists of the weight that pair needs to be given and the generator
+ * pairs: [[2 gen.int], [3 gen.int.between(0, 100)], [1 gen.bool]]
+ */
+// TODO - need assertions for pairs passed
+miscGens.frequency = function (pairs) {
+    var gensSpread = pairs.reduce(function (acc, pair) {
+        return acc.concat(new Array(pair[0]).fill(pair[1]));
+    }, []);
+
+    return basicGen.elements(gensSpread)();
+};
+
+miscGens.any = function () {
+    var objectGen = require("./object.js");
+
+    var gensWithWeights = [[4, numberGen.int], [4, numberGen.int.positive], [2, numberGen.int.large], [4, basicGen.bool], [4, stringGen.string], [4, stringGen.string.ascii], [4, stringGen.string.alphaNum], [4, stringGen.string.alpha], [1, objectGen.object]];
+
+    return miscGens.frequency(gensWithWeights)();
+};
+
+/*
+ * Returns any one of the following generators with given weights
+ * number.int ->
+ * number.int.positive ->
+ * bool ->
+ * string ->
+ * string.ascii ->
+ * string.alphaNum ->
+ */
+miscGens.any.simple = function () {
+    var gensWithWeights = [[4, numberGen.int], [4, numberGen.int.positive], [4, basicGen.bool], [4, stringGen.string], [4, stringGen.string.ascii], [4, stringGen.string.alphaNum], [4, stringGen.string.alpha]];
+
+    return miscGens.frequency(gensWithWeights)();
+};
+
+// random date generator
+miscGens.date = function () {
+    return new Date(numberGen.uint.large());
+};
+
+module.exports = miscGens;
+
+},{"../polyfills.js":24,"./basic":15,"./number":19,"./object.js":20,"./string":21,"assert":1}],19:[function(require,module,exports){
+"use strict";
+
+// require('babel/polyfill');
+var basic = require("./basic");
+var utils = require("../utils");
+
+var numberGen = {};
+
+/*Generate an integer upto size. Non negative*/
+numberGen.intUpto = function () {
+    var size = arguments[0] === undefined ? 100 : arguments[0];
+    return Math.floor(Math.random() * size);
+};
+
+/*Generate an integer bounded by [-size, size]*/
+numberGen.int = function () {
+    var size = arguments[0] === undefined ? 100 : arguments[0];
+    return basic.elements([-1, 1])() * numberGen.intUpto(size);
+};
+
+numberGen.int.shrink = regeneratorRuntime.mark(function callee$0$0(val) {
+    var limit, i;
+    return regeneratorRuntime.wrap(function callee$0$0$(context$1$0) {
+        while (1) switch (context$1$0.prev = context$1$0.next) {
+            case 0:
+                if (!(val === 0 || val === 1)) {
+                    context$1$0.next = 2;
+                    break;
+                }
+
+                return context$1$0.abrupt("return", 0);
+
+            case 2:
+                context$1$0.next = 4;
+                return 0;
+
+            case 4:
+                limit = Math.abs(val);
+                i = 1;
+                context$1$0.next = 8;
+                return Math.fllor(val / 2);
+
+            case 8:
+                if (!(val - 1 === Math.floor(val / 2))) {
+                    context$1$0.next = 12;
+                    break;
+                }
+
+                return context$1$0.abrupt("return", 0);
+
+            case 12:
+                return context$1$0.abrupt("return", val - 1);
+
+            case 13:
+            case "end":
+                return context$1$0.stop();
+        }
+    }, callee$0$0, this);
+});
+
+/*Generate a positive Integer*/
+numberGen.int.positive = function () {
+    var size = arguments[0] === undefined ? 100 : arguments[0];
+    return numberGen.intUpto(size) + 1;
+};
+
+/*Choose an integer in the range [min, max], both inclusive in search*/
+numberGen.int.choose = numberGen.int.between = function (min, max) {
+    return basic.elements(utils.range(min, max + 1));
+};
+
+/*Generate a float bounded by [-size, size]*/
+numberGen.float = function () {
+    var size = arguments[0] === undefined ? 100 : arguments[0];
+    return basic.random() * size;
+};
+
+/*Generate a large integer*/
+numberGen.int.large = function () {
+    return Math.floor(Math.random() * Number.MAX_VALUE);
+};
+
+/*Generate an unsigned integer*/
+// TODO - no idea why it has to be upto size*size
+numberGen.uint = function () {
+    var size = arguments[0] === undefined ? 100 : arguments[0];
+    return numberGen.intUpto(size * size);
+};
+
+/*Generate a large unsigned integer*/
+numberGen.uint.large = function () {
+    return Math.floor(Math.random() * Number.MAX_VALUE);
+};
+
+module.exports = numberGen;
+
+},{"../utils":25,"./basic":15}],20:[function(require,module,exports){
+"use strict";
+
+var assert = require("assert");
+var utils = require("../utils");
+var stringGen = require("./string.js");
+var miscGen = require("./misc.js");
+
+var objectGens = {};
+
+// generate a random object.
+objectGens.object = function () {
+    var maxProps = 10;
+    var numProps = utils.random(1, maxProps);
+    var maxKeyLength = 10;
+    var keyGenerator = miscGen.suchThat(function (str) {
+        return str.length > 0;
+    }, stringGen.string);
+    var valSizeMax = 20;
+    var resultObject = {};
+
+    for (var i = 0; i < numProps; i++) {
+        var key = keyGenerator(maxKeyLength);
+        var val = miscGen.any(valSizeMax);
+        resultObject[key] = val;
+    }
+
+    return resultObject;
+};
+
+function generateObjectOfShape(shape) {
+    var result = {};
+    var size = 10;
+    for (var prop in shape) {
+        if (shape.hasOwnProperty(prop)) {
+            if (typeof shape[prop] === "function") {
+                result[prop] = shape[prop](size);
+            } else if (utils.isObject(shape[prop])) {
+                result[prop] = generateObjectOfShape(shape[prop]);
+            } else {
+                result[prop] = shape[prop];
+            }
+        }
+    }
+
+    return result;
+}
+
+/*Generateo an object of given shape*/
+objectGens.object.ofShape = function (shape) {
+    assert(utils.isObject(shape), "Need an argument of Object type");
+
+    return generateObjectOfShape.bind(undefined, shape);
+};
+
+module.exports = objectGens;
+
+},{"../utils":25,"./misc.js":18,"./string.js":21,"assert":1}],21:[function(require,module,exports){
+"use strict";
+
+var assert = require("assert");
+var ret = require("ret");
+var types = ret.types;
+var DRange = require("discontinuous-range");
+
+var utils = require("../utils");
+var basicGen = require("./basic.js");
+var arrayGen = require("./array.js");
+
+var stringGens = {};
+
+var regexOptions = {
+    ignoreCase: false,
+    multiline: false,
+    regexRepetitionMax: 100 // max number of characters to generate for '*' like expressions
+};
+
+var defaultRange = new DRange(32, 126);
+
+stringGens.string = function () {
+    var size = arguments[0] === undefined ? 10 : arguments[0];
+
+    return arrayGen.arrayOf(basicGen.char)(size).join("");
+};
+
+stringGens.string.ascii = function () {
+    var size = arguments[0] === undefined ? 10 : arguments[0];
+
+    return arrayGen.arrayOf(basicGen.char.ascii)(size).join("");
+};
+
+/*Generate a string of alphabets*/
+stringGens.string.alpha = function () {
+    var size = arguments[0] === undefined ? 10 : arguments[0];
+    return arrayGen.arrayOf(basicGen.char.alpha)(size).join("");
+};
+
+/*Generate a string of alpha numeric characters*/
+stringGens.string.alphaNum = function () {
+    var size = arguments[0] === undefined ? 10 : arguments[0];
+    return arrayGen.arrayOf(basicGen.char.alphaNum)(size).join("");
+};
+
+var getTokenRange = function (token) {
+
+    switch (token.type) {
+        case types.CHAR:
+            return new DRange(token.value);
+        case types.SET:
+            var drange = token.set.reduce(function (acc, tokenItem) {
+                return acc.add(getTokenRange(tokenItem));
+            }, new DRange());
+
+            // case like /ab\D/ , which means all not digits
+            if (token.not) {
+                drange = defaultRange.clone().subtract(drange);
+            }
+
+            return drange;
+        case types.RANGE:
+            return new DRange(token.from, token.to);
+        default:
+            return new Error("Can expand token: ", token);
+    }
+};
+
+var getChar = function (charIntVal) {
+    var ignoreCase = arguments[1] === undefined ? false : arguments[1];
+
+    var charCode = ignoreCase && basicGen.bool() ? otherCase(charIntVal) : charIntVal;
+    return String.fromCharCode(charCode);
+};
+
+var generateRandomValFromRange = function (drange) {
+    var randomRange = utils.random(0, drange.ranges.length - 1);
+    return getChar(utils.random(drange.ranges[randomRange].low, drange.ranges[randomRange].high), regexOptions.ignoreCase);
+};
+
+var otherCase = function (charIntVal) {
+    if (charIntVal >= 97 && charIntVal <= 122) {
+        return charIntVal - 32;
+    }
+
+    if (charIntVal >= 65 && charIntVal <= 90) {
+        return charIntVal + 32;
+    }
+
+    return charIntVal;
+};
+
+var generateMatchingString = function (token, groups) {
+    var str = "";
+
+    switch (token.type) {
+        case types.ROOT:
+        case types.GROUP:
+            if (token.notFollowedBy) {
+                return "";
+            }
+            // Insert placeholder until group string is generated.
+            if (token.remember && token.groupNumber === undefined) {
+                token.groupNumber = groups.push(null) - 1;
+            }
+
+            var stack = token.stack;
+
+            if (token.options) {
+                var randomIndex = utils.random(0, token.options.length - 1);
+                stack = token.options[randomIndex];
+            }
+
+            str = stack.reduce(function (acc, stackItem) {
+                return acc + generateMatchingString(stackItem, groups);
+            }, "");
+
+            if (token.remember) {
+                groups[token.groupNumber] = str;
+            }
+
+            return str;
+        case types.POSITION:
+            // ^, $
+            // TODO
+            return "";
+        case types.SET:
+            // ., \d, \D, \w, \W, \s, \S
+            var tokenRange = getTokenRange(token);
+            return generateRandomValFromRange(tokenRange) || "";
+        case types.RANGE:
+            // don't know when this happens
+            return getChar(utils.random(token.from, token.to), regexOptions.ignoreCase);
+        case types.REPETITION:
+            // *, {1, }, {2, 6}
+            var stringRandomLength = utils.random(token.min, token.max === Infinity ? token.min + regexOptions.regexRepetitionMax : token.max);
+
+            str = "";
+
+            for (var i in utils.range(0, stringRandomLength)) {
+                str += generateMatchingString(token.value, groups);
+            }
+
+            return str;
+        case types.REFERENCE:
+            return groups[token.value - 1] || "";
+        case types.CHAR:
+            return getChar(token.value, regexOptions.ignoreCase);
+        default:
+    }
+};
+
+stringGens.string.matches = function (pattern, options) {
+    assert(utils.isString(pattern) || pattern instanceof RegExp, "Expect a RegExp object or regular expression string as input");
+
+    var regexSource = pattern;
+    if (utils.isString(pattern)) {
+        if (options && options.i) {
+            regexOptions.ignoreCase = true;
+        }
+
+        if (options && options.m) {
+            regexOptions.multiline = true;
+        }
+    } else {
+        stringGens.string.ignoreCase = pattern.ignoreCase;
+        stringGens.string.multiline = pattern.multiline;
+        regexSource = pattern.source;
+    }
+
+    var tokens = ret(regexSource);
+    return function () {
+        return generateMatchingString(tokens, []);
+    };
+};
+
+module.exports = stringGens;
+
+},{"../utils":25,"./array.js":14,"./basic.js":15,"assert":1,"discontinuous-range":2,"ret":5}],22:[function(require,module,exports){
+"use strict";
+
+var _require = require("./utils");
+
+var range = _require.range;
+
+function getSize(i) {
+    return i * (2 ^ i);
+}
+
+function getRandomVals(ranGen, n) {
+    return range(0, n).map(function (i) {
+        return ranGen(getSize(i));
+    });
+}
+
+module.exports = {
+    getRandomVals: getRandomVals,
+    getSize: getSize
+};
+
+},{"./utils":25}],23:[function(require,module,exports){
+"use strict";
+
+var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
+var assert = require("assert");
+var gen = require("./generators");
+
+var _require = require("./get_random_vals");
+
+var getSize = _require.getSize;
+
+var jssmartcheck = { gen: gen };
+
+jssmartcheck.forAll = function () {
+    for (var _len = arguments.length, gens = Array(_len), _key = 0; _key < _len; _key++) {
+        gens[_key] = arguments[_key];
+    }
+
+    assert(gens.every(function (ranGen) {
+        return typeof ranGen === "function";
+    }), "Expect all generators to be function references");
+
+    jssmartcheck.forallGens = gens;
+    return jssmartcheck;
+};
+
+var getErrorMessage = function (numTests, fail) {
+    return JSON.stringify({
+        result: false,
+        numTests: numTests,
+        fail: fail
+    });
+};
+
+function shrinkVal(_x, _x2, _x3, _x4, _x5) {
+    var _again = true;
+
+    _function: while (_again) {
+        _again = false;
+        var gen = _x,
+            val = _x2,
+            prop = _x3,
+            index = _x4,
+            allArgs = _x5;
+        shrinkList = nextVal = nextVal2 = undefined;
+
+        if (gen.shrink && typeof gen.shrink === "function") {
+            var shrinkList = gen.shrink(val);
+            // if there is a shrink list
+            var nextVal = shrinkList.next();
+            if (nextVal.done === false) {
+                _x = nextVal.value;
+                _x2 = val;
+                _x3 = prop;
+                _x4 = index;
+                _x5 = allArgs;
+                _again = true;
+                continue _function;
+            } else {
+                if (f.apply(null, [].concat(_toConsumableArray(allArgs.slice(0, index)), [shrunken.value], _toConsumableArray(allArgs.slice(index + 1)))) === true) {
+                    var nextVal2 = shrinkList.next();
+                    if (nextVal2.done === false) {
+                        return val;
+                    } else {
+                        _x = gen;
+                        _x2 = nextVal2.value;
+                        _x3 = prop;
+                        _x4 = index;
+                        _x5 = allArgs;
+                        _again = true;
+                        continue _function;
+                    }
+                } else {
+                    return val;
+                }
+            }
+        } else {
+            return val;
+        }
+    }
+}
+
+function shrinkVals(gens, vals, prop) {
+    var shrunkenValues = vals;
+    return vals.map(function (val, i) {
+        shrunkenValues[i] = shrinkVal(gens[i], val, prop, i, shrunkenValues);
+        return shrunkenValues[i];
+    });
+}
+
+jssmartcheck.shrinkVals = shrinkVals;
+jssmartcheck.shrinkVal = shrinkVal;
+
+jssmartcheck.check = function (f) {
+    var times = arguments[1] === undefined ? 100 : arguments[1];
+    var seed = arguments[2] === undefined ? Math.random() * 1000 : arguments[2];
+
+    jssmartcheck.seed = seed;
+    assert(typeof f === "function", "check expects a property function");
+
+    for (var i = 0; i < times; i++) {
+        var sampleValues;
+
+        (function (i) {
+            sampleValues = jssmartcheck.forallGens.map(function (ranGen) {
+                return ranGen(getSize(i));
+            });
+
+            if (f.apply(undefined, sampleValues) === true) {
+                console.log({ result: true, numTests: times, seed: seed });
+            } else {
+                throw new Error(getErrorMessage(i, shrinkVals(forallGens, sampleValues, f)));
+            }
+        })(i);
+    }
+
+    console.log({ result: true, numTests: times, seed: seed });
+};
+
+module.exports = jssmartcheck;
+
+},{"./generators":17,"./get_random_vals":22,"assert":1}],24:[function(require,module,exports){
+"use strict";
+
+if (!Array.prototype.fill) {
+  Array.prototype.fill = function (value) {
+
+    // Steps 1-2.
+    if (this == null) {
+      throw new TypeError("this is null or not defined");
+    }
+
+    var O = Object(this);
+
+    // Steps 3-5.
+    var len = O.length >>> 0;
+
+    // Steps 6-7.
+    var start = arguments[1];
+    var relativeStart = start >> 0;
+
+    // Step 8.
+    var k = relativeStart < 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
+
+    // Steps 9-10.
+    var end = arguments[2];
+    var relativeEnd = end === undefined ? len : end >> 0;
+
+    // Step 11.
+    var final = relativeEnd < 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
+
+    // Step 12.
+    while (k < final) {
+      O[k] = value;
+      k++;
+    }
+
+    // Step 13.
+    return O;
+  };
+}
+
+},{}],25:[function(require,module,exports){
+"use strict";
+
+var _extend = require("extend");
+
+// generate a random number between min and max.
+function _getRandomNumber(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function random(_x, _x2, isFloat) {
+    var min = arguments[0] === undefined ? 0 : arguments[0];
+    var max = arguments[1] === undefined ? Number.MAX_VALUE : arguments[1];
+
+    return isFloat ? _getRandomNumber(min, max) : Math.round(_getRandomNumber(min, max));
+}
+
+function choose(elements) {
+    return elements[random(0, elements.length - 1)];
+}
+
+function isAscii(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
+
+// generate a range of values (array)
+function range(min, max) {
+    var lowLimit = max ? min : 0,
+        upLimit = max ? max : min;
+    return Array.apply(0, Array(upLimit - lowLimit)).map(function (x, y) {
+        return y + lowLimit;
+    });
+}
+
+function isObject(value) {
+    var type = typeof value;
+    return type === "function" || value && type == "object" || false;
+}
+
+function isFunction(value) {
+    return typeof value === "function" || false;
+}
+
+function isString(value) {
+    return !!value.substring;
+}
+
+function extend() {
+    for (var _len = arguments.length, obj = Array(_len), _key = 0; _key < _len; _key++) {
+        obj[_key] = arguments[_key];
+    }
+
+    return _extend.apply(_extend, [true].concat(obj));
+}
+
+function last(array) {
+    return array[array.length - 1];
+}
+
+//https://github.com/addyosmani/memoize.js
+function memoize(func) {
+    var stringifyJson = JSON.stringify,
+        cache = {};
+
+    var cachedfun = function cachedfun() {
+        var hash = stringifyJson(arguments);
+        return hash in cache ? cache[hash] : cache[hash] = func.apply(this, arguments);
+    };
+
+    cachedfun.__cache = (function () {
+        if (!cache.remove) {
+            cache.remove = function () {
+                var hash = stringifyJson(arguments);
+                return delete cache[hash];
+            };
+        }
+        return cache;
+    }).call(this);
+
+    return cachedfun;
+}
+
+function times(n, iterator) {
+    var accum = Array(Math.max(0, n));
+    for (var i = 0; i < n; i++) {
+        accum[i] = iterator.call();
+    }
+
+    return accum;
+}
+
+var utils = {
+    choose: choose,
+    isAscii: isAscii,
+    random: random,
+    range: range,
+    isObject: isObject,
+    isFunction: isFunction,
+    isString: isString,
+    extend: extend,
+    last: last,
+    memoize: memoize,
+    times: times
+};
+
+module.exports = utils;
+
+},{"extend":3}]},{},[23])(23)
 });

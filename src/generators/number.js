@@ -14,20 +14,20 @@ numberGen.int = (size=100) =>
     basic.elements([-1, 1])() * numberGen.intUpto(size);
 
 numberGen.int.shrink = function *(val) {
-    var limit = Math.abs(val);
-    var shrinkedVal = limit - 1;
-
-    while(Math.abs(shrinkedVal) !== 0) {
-        yield shrinkedVal;
-
-        if(shrinkedVal >= 0) {
-            shrinkedVal = -shrinkedVal;
-        } else {
-            shrinkedVal = -(shrinkedVal + 1);
-        }
+    if(val === 0 || val === 1) {
+        return 0
     }
 
-    return shrinkedVal
+    yield 0
+
+    var limit = Math.abs(val);
+    var i = 1
+    yield Math.fllor(val/2)
+    if(val - 1 === Math.floor(val/2)) {
+        return 0
+    } else {
+        return (val - 1)
+    }
 };
 
 /*Generate a positive Integer*/
