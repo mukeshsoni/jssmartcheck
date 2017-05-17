@@ -13,22 +13,39 @@ numberGen.intUpto = (size=100) => Math.floor(Math.random()*size);
 numberGen.int = (size=100) =>
     basic.elements([-1, 1])() * numberGen.intUpto(size);
 
+// first value is always zero
+// second value is always 1
+// flip sign for 1
+// double it
+// flip sign
+// quadruple it
+// nah, bad algorithm
 numberGen.int.shrink = function *(val) {
-    if(val === 0 || val === 1) {
+    if(val === 0) {
         return 
     }
 
     yield 0
 
+    if(Math.abs(val) === 1) {
+        return
+    }
+
+    yield 1
+    yield -1
+
+    let nextVal = 2
     var limit = Math.abs(val);
     var i = 1
-    yield Math.floor(val/2)
-    if(val - 1 === Math.floor(val/2)) {
-        return 0
-    } else {
-        return (val - 1)
-    }
-};
+    while(Math.abs(val) > Math.abs(nextVal)) {
+        yield nextVal
+        if(nextVal > 0) {
+            nextVal = -nextVal 
+        } else {
+            nextVal = -nextVal*2
+        }
+    } 
+}
 
 /*Generate a positive Integer*/
 numberGen.int.positive = (size=100) => numberGen.intUpto(size) + 1;

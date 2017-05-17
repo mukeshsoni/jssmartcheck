@@ -23,9 +23,12 @@ var getErrorMessage = (numTests, fail) => {
     });
 };
 
-function shrinkVal(gen, val, prop, index, allArgs) {
+// depending on the implementation of the shrink function for the particular generator
+// shrinkVal can easily go into an infinite loop
+// need to stop it after some iterations
+function shrinkVal(gen, val, prop, index, allArgs, checked=[]) {
     if(gen.shrink && typeof gen.shrink === 'function') {
-        const shrinkList = gen.shrink(val)
+        const shrinkList = gen.shrink(Math.abs(val))
         let nextVal = shrinkList.next()
         while(nextVal.done === false) {
             const v = shrinkVal(gen, nextVal.value, prop, index, allArgs)
@@ -33,7 +36,11 @@ function shrinkVal(gen, val, prop, index, allArgs) {
             if(prop.apply(null, newAllArgs) === false) {
                 return v
             } else {
+                checked.push(nextVal.value)
                 nextVal = shrinkList.next()
+                while(!nextVal.done && checked.indexOf(nextVal.value) >= 0) {
+                    nextVal = shrinkList.next()
+                }
             }
         }
 
