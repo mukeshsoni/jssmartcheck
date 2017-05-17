@@ -14,12 +14,11 @@ numberGen.int = (size=100) =>
     basic.elements([-1, 1])() * numberGen.intUpto(size);
 
 // first value is always zero
-// second value is always 1
-// flip sign for 1
-// double it
-// flip sign
-// quadruple it
-// nah, bad algorithm
+// second is 1
+// third is -1
+// need a way to restrict the total shrunken values
+// like if the input val is too large, need to tweak the algorithm so that the later values 
+// increase super quick to reach that large value
 numberGen.int.shrink = function *(val) {
     if(val === 0) {
         return 
