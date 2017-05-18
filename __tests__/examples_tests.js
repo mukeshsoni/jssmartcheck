@@ -40,7 +40,7 @@ describe('examples', function () {
 	});
 
 	// this must fail for the value '1'
-	it.only('Number divided by itself ', function() {
+	it('Number divided by itself ', function() {
 		var temp = () => {
 			jsc.forAll(gen.int).check((a) => {
 				return (a-1)/(a-1) === 1;

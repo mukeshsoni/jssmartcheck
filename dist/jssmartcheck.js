@@ -640,12 +640,20 @@ module.exports = DiscontinuousRange;
 
 },{}],3:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
-var toString = Object.prototype.toString;
+var toStr = Object.prototype.toString;
 var undefined;
+
+var isArray = function isArray(arr) {
+	if (typeof Array.isArray === 'function') {
+		return Array.isArray(arr);
+	}
+
+	return toStr.call(arr) === '[object Array]';
+};
 
 var isPlainObject = function isPlainObject(obj) {
 	'use strict';
-	if (!obj || toString.call(obj) !== '[object Object]') {
+	if (!obj || toStr.call(obj) !== '[object Object]') {
 		return false;
 	}
 
@@ -697,10 +705,10 @@ module.exports = function extend() {
 				}
 
 				// Recurse if we're merging plain objects or arrays
-				if (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
+				if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
 					if (copyIsArray) {
 						copyIsArray = false;
-						clone = src && Array.isArray(src) ? src : [];
+						clone = src && isArray(src) ? src : [];
 					} else {
 						clone = src && isPlainObject(src) ? src : {};
 					}
@@ -722,6 +730,31 @@ module.exports = function extend() {
 
 
 },{}],4:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],5:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -907,7 +940,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var util      = require('./util');
 var types     = require('./types');
 var sets      = require('./sets');
@@ -1016,9 +1049,9 @@ module.exports = function(regexpStr) {
         // Increase index by length of class.
         i += classTokens[1];
         last.push({
-            type: types.SET
-          , set: classTokens[0]
-          , not: not
+          type: types.SET,
+          set: classTokens[0],
+          not: not,
         });
 
         break;
@@ -1034,14 +1067,14 @@ module.exports = function(regexpStr) {
       case '(':
         // Create group.
         var group = {
-            type: types.GROUP
-          , stack: []
-          , remember: true
+          type: types.GROUP,
+          stack: [],
+          remember: true,
         };
 
         c = str[i];
 
-        // if if this is a special kind of group.
+        // If if this is a special kind of group.
         if (c === '?') {
           c = str[i + 1];
           i += 2;
@@ -1056,8 +1089,8 @@ module.exports = function(regexpStr) {
 
           } else if (c !== ':') {
             util.error(regexpStr,
-                'Invalid group, character \'' + c + '\' after \'?\' at column ' +
-                (i - 1));
+              'Invalid group, character \'' + c +
+              '\' after \'?\' at column ' + (i - 1));
           }
 
           group.remember = false;
@@ -1084,7 +1117,8 @@ module.exports = function(regexpStr) {
 
         // Check if this group has a PIPE.
         // To get back the correct last stack.
-        last = lastGroup.options ? lastGroup.options[lastGroup.options.length - 1] : lastGroup.stack;
+        last = lastGroup.options ?
+          lastGroup.options[lastGroup.options.length - 1] : lastGroup.stack;
         break;
 
 
@@ -1112,20 +1146,23 @@ module.exports = function(regexpStr) {
       case '{':
         var rs = /^(\d+)(,(\d+)?)?\}/.exec(str.slice(i)), min, max;
         if (rs !== null) {
+          if (last.length === 0) {
+            repeatErr(i);
+          }
           min = parseInt(rs[1], 10);
           max = rs[2] ? rs[3] ? parseInt(rs[3], 10) : Infinity : min;
           i += rs[0].length;
 
           last.push({
-              type: types.REPETITION
-            , min: min
-            , max: max
-            , value: last.pop()
+            type: types.REPETITION,
+            min: min,
+            max: max,
+            value: last.pop(),
           });
         } else {
           last.push({
-              type: types.CHAR
-            , value: 123
+            type: types.CHAR,
+            value: 123,
           });
         }
         break;
@@ -1135,10 +1172,10 @@ module.exports = function(regexpStr) {
           repeatErr(i);
         }
         last.push({
-            type: types.REPETITION
-          , min: 0
-          , max: 1
-          , value: last.pop()
+          type: types.REPETITION,
+          min: 0,
+          max: 1,
+          value: last.pop(),
         });
         break;
 
@@ -1147,10 +1184,10 @@ module.exports = function(regexpStr) {
           repeatErr(i);
         }
         last.push({
-            type: types.REPETITION
-          , min: 1
-          , max: Infinity
-          , value: last.pop()
+          type: types.REPETITION,
+          min: 1,
+          max: Infinity,
+          value: last.pop(),
         });
         break;
 
@@ -1159,10 +1196,10 @@ module.exports = function(regexpStr) {
           repeatErr(i);
         }
         last.push({
-            type: types.REPETITION
-          , min: 0
-          , max: Infinity
-          , value: last.pop()
+          type: types.REPETITION,
+          min: 0,
+          max: Infinity,
+          value: last.pop(),
         });
         break;
 
@@ -1170,8 +1207,8 @@ module.exports = function(regexpStr) {
       // Default is a character that is not `\[](){}?+*^$`.
       default:
         last.push({
-            type: types.CHAR
-          , value: c.charCodeAt(0)
+          type: types.CHAR,
+          value: c.charCodeAt(0),
         });
     }
 
@@ -1187,7 +1224,7 @@ module.exports = function(regexpStr) {
 
 module.exports.types = types;
 
-},{"./positions":6,"./sets":7,"./types":8,"./util":9}],6:[function(require,module,exports){
+},{"./positions":7,"./sets":8,"./types":9,"./util":10}],7:[function(require,module,exports){
 var types = require('./types');
 
 exports.wordBoundary = function() {
@@ -1206,7 +1243,7 @@ exports.end = function() {
   return { type: types.POSITION, value: '$' };
 };
 
-},{"./types":8}],7:[function(require,module,exports){
+},{"./types":9}],8:[function(require,module,exports){
 var types = require('./types');
 
 var INTS = function() {
@@ -1215,53 +1252,53 @@ var INTS = function() {
 
 var WORDS = function() {
  return [
-      { type: types.CHAR, value: 95 }
-    , { type: types.RANGE, from: 97, to: 122 }
-    , { type: types.RANGE, from: 65, to: 90 }
+    { type: types.CHAR, value: 95 },
+    { type: types.RANGE, from: 97, to: 122 },
+    { type: types.RANGE, from: 65, to: 90 }
   ].concat(INTS());
 };
 
 var WHITESPACE = function() {
  return [
-      { type: types.CHAR, value: 9 }
-    , { type: types.CHAR, value: 10 }
-    , { type: types.CHAR, value: 11 }
-    , { type: types.CHAR, value: 12 }
-    , { type: types.CHAR, value: 13 }
-    , { type: types.CHAR, value: 32 }
-    , { type: types.CHAR, value: 160 }
-    , { type: types.CHAR, value: 5760 }
-    , { type: types.CHAR, value: 6158 }
-    , { type: types.CHAR, value: 8192 }
-    , { type: types.CHAR, value: 8193 }
-    , { type: types.CHAR, value: 8194 }
-    , { type: types.CHAR, value: 8195 }
-    , { type: types.CHAR, value: 8196 }
-    , { type: types.CHAR, value: 8197 }
-    , { type: types.CHAR, value: 8198 }
-    , { type: types.CHAR, value: 8199 }
-    , { type: types.CHAR, value: 8200 }
-    , { type: types.CHAR, value: 8201 }
-    , { type: types.CHAR, value: 8202 }
-    , { type: types.CHAR, value: 8232 }
-    , { type: types.CHAR, value: 8233 }
-    , { type: types.CHAR, value: 8239 }
-    , { type: types.CHAR, value: 8287 }
-    , { type: types.CHAR, value: 12288 }
-    , { type: types.CHAR, value: 65279 }
+    { type: types.CHAR, value: 9 },
+    { type: types.CHAR, value: 10 },
+    { type: types.CHAR, value: 11 },
+    { type: types.CHAR, value: 12 },
+    { type: types.CHAR, value: 13 },
+    { type: types.CHAR, value: 32 },
+    { type: types.CHAR, value: 160 },
+    { type: types.CHAR, value: 5760 },
+    { type: types.CHAR, value: 6158 },
+    { type: types.CHAR, value: 8192 },
+    { type: types.CHAR, value: 8193 },
+    { type: types.CHAR, value: 8194 },
+    { type: types.CHAR, value: 8195 },
+    { type: types.CHAR, value: 8196 },
+    { type: types.CHAR, value: 8197 },
+    { type: types.CHAR, value: 8198 },
+    { type: types.CHAR, value: 8199 },
+    { type: types.CHAR, value: 8200 },
+    { type: types.CHAR, value: 8201 },
+    { type: types.CHAR, value: 8202 },
+    { type: types.CHAR, value: 8232 },
+    { type: types.CHAR, value: 8233 },
+    { type: types.CHAR, value: 8239 },
+    { type: types.CHAR, value: 8287 },
+    { type: types.CHAR, value: 12288 },
+    { type: types.CHAR, value: 65279 }
   ];
 };
 
 var NOTANYCHAR = function() {
- return [
-      { type: types.CHAR, value: 10 }
-    , { type: types.CHAR, value: 13 }
-    , { type: types.CHAR, value: 8232 }
-    , { type: types.CHAR, value: 8233 }
+  return [
+    { type: types.CHAR, value: 10 },
+    { type: types.CHAR, value: 13 },
+    { type: types.CHAR, value: 8232 },
+    { type: types.CHAR, value: 8233 },
   ];
 };
 
-// predefined class objects
+// Predefined class objects.
 exports.words = function() {
   return { type: types.SET, set: WORDS(), not: false };
 };
@@ -1290,19 +1327,19 @@ exports.anyChar = function() {
   return { type: types.SET, set: NOTANYCHAR(), not: true };
 };
 
-},{"./types":8}],8:[function(require,module,exports){
+},{"./types":9}],9:[function(require,module,exports){
 module.exports = {
-    ROOT       : 0
-  , GROUP      : 1
-  , POSITION   : 2
-  , SET        : 3
-  , RANGE      : 4
-  , REPETITION : 5
-  , REFERENCE  : 6
-  , CHAR       : 7
+  ROOT       : 0,
+  GROUP      : 1,
+  POSITION   : 2,
+  SET        : 3,
+  RANGE      : 4,
+  REPETITION : 5,
+  REFERENCE  : 6,
+  CHAR       : 7,
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var types = require('./types');
 var sets  = require('./sets');
 
@@ -1321,15 +1358,20 @@ var SLSH = { '0': 0, 't': 9, 'n': 10, 'v': 11, 'f': 12, 'r': 13 };
  * @return {String}
  */
 exports.strToChars = function(str) {
-  var chars_regex = /(\[\\b\])|\\(?:u([A-F0-9]{4})|x([A-F0-9]{2})|(0?[0-7]{2})|c([@A-Z\[\\\]\^?])|([0tnvfr]))/g;
-  str = str.replace(chars_regex, function(s, b, a16, b16, c8, dctrl, eslsh) {
+  /* jshint maxlen: false */
+  var chars_regex = /(\[\\b\])|(\\)?\\(?:u([A-F0-9]{4})|x([A-F0-9]{2})|(0?[0-7]{2})|c([@A-Z\[\\\]\^?])|([0tnvfr]))/g;
+  str = str.replace(chars_regex, function(s, b, lbs, a16, b16, c8, dctrl, eslsh) {
+    if (lbs) {
+      return s;
+    }
+
     var code = b     ? 8 :
                a16   ? parseInt(a16, 16) :
                b16   ? parseInt(b16, 16) :
                c8    ? parseInt(c8,   8) :
                dctrl ? CTRL.indexOf(dctrl) :
-               eslsh ? SLSH[eslsh] : undefined;
-    
+               SLSH[eslsh];
+
     var c = String.fromCharCode(code);
 
     // Escape special regex characters.
@@ -1353,10 +1395,10 @@ exports.strToChars = function(str) {
  * @return {Array.<Array.<Object>, Number>}
  */
 exports.tokenizeClass = function(str, regexpStr) {
-  var tokens = []
-    , regexp = /\\(?:(w)|(d)|(s)|(W)|(D)|(S))|((?:(?:\\)(.)|([^\]\\]))-(?:\\)?([^\]]))|(\])|(?:\\)?(.)/g
-    , rs, c
-    ;
+  /* jshint maxlen: false */
+  var tokens = [];
+  var regexp = /\\(?:(w)|(d)|(s)|(W)|(D)|(S))|((?:(?:\\)(.)|([^\]\\]))-(?:\\)?([^\]]))|(\])|(?:\\)?(.)/g;
+  var rs, c;
 
 
   while ((rs = regexp.exec(str)) != null) {
@@ -1380,15 +1422,15 @@ exports.tokenizeClass = function(str, regexpStr) {
 
     } else if (rs[7]) {
       tokens.push({
-          type: types.RANGE
-        , from: (rs[8] || rs[9]).charCodeAt(0)
-        ,   to: rs[10].charCodeAt(0)
+        type: types.RANGE,
+        from: (rs[8] || rs[9]).charCodeAt(0),
+          to: rs[10].charCodeAt(0),
       });
 
     } else if (c = rs[12]) {
       tokens.push({
-          type: types.CHAR
-        , value: c.charCodeAt(0)
+        type: types.CHAR,
+        value: c.charCodeAt(0),
       });
 
     } else {
@@ -1410,32 +1452,7 @@ exports.error = function(regexp, msg) {
   throw new SyntaxError('Invalid regular expression: /' + regexp + '/: ' + msg);
 };
 
-},{"./sets":7,"./types":8}],10:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],11:[function(require,module,exports){
+},{"./sets":8,"./types":9}],11:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
@@ -2032,7 +2049,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":11,"_process":4,"inherits":10}],13:[function(require,module,exports){
+},{"./support/isBuffer":11,"_process":5,"inherits":4}],13:[function(require,module,exports){
 "use strict";
 
 var constants = {
@@ -2639,7 +2656,7 @@ stringGens.string.matches = function (pattern, options) {
 
 module.exports = stringGens;
 
-},{"../utils":25,"./array.js":14,"./basic.js":15,"assert":1,"discontinuous-range":2,"ret":5}],22:[function(require,module,exports){
+},{"../utils":25,"./array.js":14,"./basic.js":15,"assert":1,"discontinuous-range":2,"ret":6}],22:[function(require,module,exports){
 "use strict";
 
 var _require = require("./utils");
