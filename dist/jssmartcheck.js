@@ -2650,7 +2650,7 @@ function getSize(i) {
     if (i < 4) {
         return i;
     } else {
-        return i * Math.pow(2, i);
+        return i * 2;
     }
 }
 
