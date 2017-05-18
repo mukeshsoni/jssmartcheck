@@ -26,11 +26,13 @@ var getErrorMessage = (numTests, fail) => {
 // depending on the implementation of the shrink function for the particular generator
 // shrinkVal can easily go into an infinite loop
 // need to stop it after some iterations
-function shrinkVal(gen, val, prop, index, allArgs, checked=[]) {
+function shrinkVal(gen, val, prop, index, allArgs, checked=[], tries=0) {
+    const MAX_TRIES = 100
     if(gen.shrink && typeof gen.shrink === 'function') {
         const shrinkList = gen.shrink(Math.abs(val))
         let nextVal = shrinkList.next()
-        while(nextVal.done === false) {
+        while(nextVal.done === false && tries < MAX_TRIES) {
+            tries++
             const v = shrinkVal(gen, nextVal.value, prop, index, allArgs)
             const newAllArgs = [...allArgs.slice(0, index), v, ...allArgs.slice(index + 1)]
             if(prop.apply(null, newAllArgs) === false) {
@@ -61,23 +63,24 @@ function shrinkVals(gens, vals, prop) {
 jssmartcheck.shrinkVals = shrinkVals
 jssmartcheck.shrinkVal = shrinkVal
 
-jssmartcheck.check = (f, times=100, seed=Math.random()*1000) => {
+jssmartcheck.check = (f, { quiet=false, times=100 } = {}, seed=Math.random()*1000) => {
     jssmartcheck.seed = seed;
     assert(typeof f === 'function', 'check expects a property function');
 
     for(let i = 0; i < times; i++) {
         var sampleValues = jssmartcheck.forallGens.map((ranGen) => {
-            return ranGen(getSize(i));
+            const randomVal = ranGen(getSize(i))
+            return randomVal
         });
 
-        if(f.apply(undefined, sampleValues) === true) {
-            console.log({ result: true, numTests: times, seed: seed });
-        } else {
-            throw new Error(getErrorMessage(i, shrinkVals(forallGens, sampleValues, f)))
+        if(f.apply(undefined, sampleValues) === false) {
+            assert(false, getErrorMessage(i, shrinkVals(jssmartcheck.forallGens, sampleValues, f)))
         }
     }
 
-    console.log({ result: true, numTests: times, seed: seed });
+    if(quiet === false) {
+        console.log({ result: true, numTests: times, seed: seed });
+    }
 };
 
 module.exports = jssmartcheck;

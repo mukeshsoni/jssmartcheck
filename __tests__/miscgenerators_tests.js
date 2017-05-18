@@ -34,7 +34,7 @@ describe('misc generators', function () {
         var myPositiveIntGenerator = gen.suchThat(_.isString, numberGen.int); // crazy idea to think integer is a string! HEHEHEHE
         var size = 20;
         _.times(10, () => {
-            expect(() => myPositiveIntGenerator(size)).to.throw(Error);
+            expect(() => myPositiveIntGenerator(size)).to.throw();
         });
     });
 

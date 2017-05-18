@@ -1,7 +1,11 @@
 const { range } = require('./utils')
 
 function getSize(i) {
-    return i * (2 ^ i)
+    if(i < 4) {
+        return i
+    } else {
+        return i * Math.pow(2, i)
+    }
 }
 
 function getRandomVals(ranGen, n) {

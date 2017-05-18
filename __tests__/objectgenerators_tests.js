@@ -17,9 +17,9 @@ describe('object generators', () => {
 
     describe('object of particular shape', () => {
         it('should throw if not passed an object as argument', () => {
-            expect(()=>gen.object.ofShape()).to.throw(Error);
-            expect(()=>gen.object.ofShape('hello')).to.throw(Error);
-            expect(()=>gen.object.ofShape(1)).to.throw(Error);
+            expect(()=>gen.object.ofShape()).to.throw();
+            expect(()=>gen.object.ofShape('hello')).to.throw();
+            expect(()=>gen.object.ofShape(1)).to.throw();
             expect(()=>gen.object.ofShape({})).to.not.throw();
         });
 

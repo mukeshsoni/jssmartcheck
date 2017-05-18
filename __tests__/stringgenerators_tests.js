@@ -66,7 +66,7 @@ describe('string generators', () => {
 		}
 
 		it('should only accept regex string or regex as input', () => {
-			expect(() => gen.string.matches(123)).to.throw(Error);
+			expect(() => gen.string.matches(123)).to.throw();
 			expect(() => gen.string.matches('abc')).to.not.throw();
 			expect(() => gen.string.matches('ab.c?d*')).to.not.throw();
 			expect(() => gen.string.matches(/ab./)).to.not.throw(Error);

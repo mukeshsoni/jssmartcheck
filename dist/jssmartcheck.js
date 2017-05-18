@@ -2297,40 +2297,70 @@ numberGen.int = function () {
     return basic.elements([-1, 1])() * numberGen.intUpto(size);
 };
 
+// first value is always zero
+// second is 1
+// third is -1
+// need a way to restrict the total shrunken values
+// like if the input val is too large, need to tweak the algorithm so that the later values
+// increase super quick to reach that large value
 numberGen.int.shrink = regeneratorRuntime.mark(function callee$0$0(val) {
-    var limit, i;
+    var nextVal, limit, i;
     return regeneratorRuntime.wrap(function callee$0$0$(context$1$0) {
         while (1) switch (context$1$0.prev = context$1$0.next) {
             case 0:
-                if (!(val === 0 || val === 1)) {
+                if (!(val === 0)) {
                     context$1$0.next = 2;
                     break;
                 }
 
-                return context$1$0.abrupt("return", 0);
+                return context$1$0.abrupt("return");
 
             case 2:
                 context$1$0.next = 4;
                 return 0;
 
             case 4:
-                limit = Math.abs(val);
-                i = 1;
-                context$1$0.next = 8;
-                return Math.fllor(val / 2);
-
-            case 8:
-                if (!(val - 1 === Math.floor(val / 2))) {
-                    context$1$0.next = 12;
+                if (!(Math.abs(val) === 1)) {
+                    context$1$0.next = 6;
                     break;
                 }
 
-                return context$1$0.abrupt("return", 0);
+                return context$1$0.abrupt("return");
 
-            case 12:
-                return context$1$0.abrupt("return", val - 1);
+            case 6:
+                context$1$0.next = 8;
+                return 1;
+
+            case 8:
+                context$1$0.next = 10;
+                return -1;
+
+            case 10:
+                nextVal = 2;
+                limit = Math.abs(val);
+                i = 1;
 
             case 13:
+                if (!(Math.abs(val) > Math.abs(nextVal))) {
+                    context$1$0.next = 19;
+                    break;
+                }
+
+                context$1$0.next = 16;
+                return nextVal;
+
+            case 16:
+                if (nextVal > 0) {
+                    nextVal = -nextVal;
+                } else {
+                    // multiply by 2 or 3 (chosen randomly)
+                    // if we just keep multiplying by 2, it will only generate even numbers
+                    nextVal = -nextVal * numberGen.int.between(2, 3)() + numberGen.int.choose(1, 2)();
+                }
+                context$1$0.next = 13;
+                break;
+
+            case 19:
             case "end":
                 return context$1$0.stop();
         }
@@ -2666,51 +2696,32 @@ var getErrorMessage = function (numTests, fail) {
     });
 };
 
-function shrinkVal(_x, _x2, _x3, _x4, _x5) {
-    var _again = true;
+// depending on the implementation of the shrink function for the particular generator
+// shrinkVal can easily go into an infinite loop
+// need to stop it after some iterations
+function shrinkVal(gen, val, prop, index, allArgs) {
+    var checked = arguments[5] === undefined ? [] : arguments[5];
 
-    _function: while (_again) {
-        _again = false;
-        var gen = _x,
-            val = _x2,
-            prop = _x3,
-            index = _x4,
-            allArgs = _x5;
-        shrinkList = nextVal = nextVal2 = undefined;
-
-        if (gen.shrink && typeof gen.shrink === "function") {
-            var shrinkList = gen.shrink(val);
-            // if there is a shrink list
-            var nextVal = shrinkList.next();
-            if (nextVal.done === false) {
-                _x = nextVal.value;
-                _x2 = val;
-                _x3 = prop;
-                _x4 = index;
-                _x5 = allArgs;
-                _again = true;
-                continue _function;
+    if (gen.shrink && typeof gen.shrink === "function") {
+        var shrinkList = gen.shrink(Math.abs(val));
+        var nextVal = shrinkList.next();
+        while (nextVal.done === false) {
+            var v = shrinkVal(gen, nextVal.value, prop, index, allArgs);
+            var newAllArgs = [].concat(_toConsumableArray(allArgs.slice(0, index)), [v], _toConsumableArray(allArgs.slice(index + 1)));
+            if (prop.apply(null, newAllArgs) === false) {
+                return v;
             } else {
-                if (f.apply(null, [].concat(_toConsumableArray(allArgs.slice(0, index)), [shrunken.value], _toConsumableArray(allArgs.slice(index + 1)))) === true) {
-                    var nextVal2 = shrinkList.next();
-                    if (nextVal2.done === false) {
-                        return val;
-                    } else {
-                        _x = gen;
-                        _x2 = nextVal2.value;
-                        _x3 = prop;
-                        _x4 = index;
-                        _x5 = allArgs;
-                        _again = true;
-                        continue _function;
-                    }
-                } else {
-                    return val;
+                checked.push(nextVal.value);
+                nextVal = shrinkList.next();
+                while (!nextVal.done && checked.indexOf(nextVal.value) >= 0) {
+                    nextVal = shrinkList.next();
                 }
             }
-        } else {
-            return val;
         }
+
+        return val;
+    } else {
+        return val;
     }
 }
 
