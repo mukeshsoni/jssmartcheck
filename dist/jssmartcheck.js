@@ -2647,7 +2647,11 @@ var _require = require("./utils");
 var range = _require.range;
 
 function getSize(i) {
-    return i * (2 ^ i);
+    if (i < 4) {
+        return i;
+    } else {
+        return i * Math.pow(2, i);
+    }
 }
 
 function getRandomVals(ranGen, n) {
@@ -2701,11 +2705,14 @@ var getErrorMessage = function (numTests, fail) {
 // need to stop it after some iterations
 function shrinkVal(gen, val, prop, index, allArgs) {
     var checked = arguments[5] === undefined ? [] : arguments[5];
+    var tries = arguments[6] === undefined ? 0 : arguments[6];
 
+    var MAX_TRIES = 100;
     if (gen.shrink && typeof gen.shrink === "function") {
         var shrinkList = gen.shrink(Math.abs(val));
         var nextVal = shrinkList.next();
-        while (nextVal.done === false) {
+        while (nextVal.done === false && tries < MAX_TRIES) {
+            tries++;
             var v = shrinkVal(gen, nextVal.value, prop, index, allArgs);
             var newAllArgs = [].concat(_toConsumableArray(allArgs.slice(0, index)), [v], _toConsumableArray(allArgs.slice(index + 1)));
             if (prop.apply(null, newAllArgs) === false) {
@@ -2737,7 +2744,12 @@ jssmartcheck.shrinkVals = shrinkVals;
 jssmartcheck.shrinkVal = shrinkVal;
 
 jssmartcheck.check = function (f) {
-    var times = arguments[1] === undefined ? 100 : arguments[1];
+    var _ref = arguments[1] === undefined ? {} : arguments[1];
+
+    var _ref$quiet = _ref.quiet;
+    var quiet = _ref$quiet === undefined ? false : _ref$quiet;
+    var _ref$times = _ref.times;
+    var times = _ref$times === undefined ? 100 : _ref$times;
     var seed = arguments[2] === undefined ? Math.random() * 1000 : arguments[2];
 
     jssmartcheck.seed = seed;
@@ -2748,18 +2760,19 @@ jssmartcheck.check = function (f) {
 
         (function (i) {
             sampleValues = jssmartcheck.forallGens.map(function (ranGen) {
-                return ranGen(getSize(i));
+                var randomVal = ranGen(getSize(i));
+                return randomVal;
             });
 
-            if (f.apply(undefined, sampleValues) === true) {
-                console.log({ result: true, numTests: times, seed: seed });
-            } else {
-                throw new Error(getErrorMessage(i, shrinkVals(forallGens, sampleValues, f)));
+            if (f.apply(undefined, sampleValues) === false) {
+                assert(false, getErrorMessage(i, shrinkVals(jssmartcheck.forallGens, sampleValues, f)));
             }
         })(i);
     }
 
-    console.log({ result: true, numTests: times, seed: seed });
+    if (quiet === false) {
+        console.log({ result: true, numTests: times, seed: seed });
+    }
 };
 
 module.exports = jssmartcheck;

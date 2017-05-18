@@ -1,6 +1,6 @@
 {
   "name": "jssmartcheck",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Property based generative testing for JavaScript",
   "main": "./dist/jssmartcheck.js",
   "scripts": {

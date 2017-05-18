@@ -7,9 +7,10 @@ var shrinkVals = jsc.shrinkVals
 var shrinkVal = jsc.shrinkVal
 
 describe('shrinking', () => {
+    function add(x, y) { return x + y }
     it.only('should shrink integers', () => {
         const prop1 = x => x < 7
-        const prop2 = (x, y) => x + 1 < 12 || y < 9
+        function prop2(x, y) { return add(x, y) >= y * 2 }
         const index = 0
         const val = 40
         const allArgs = [val]
