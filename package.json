@@ -27,7 +27,7 @@
   "homepage": "https://github.com/mukeshsoni/jssmartcheck",
   "devDependencies": {
     "babelify": "^5.0.3",
-    "browserify": "14.3.0",
+    "browserify": "16.5.0",
     "chai": "^1.10.0",
     "jest": "^20.0.3",
     "lodash": "^3.2.0",
