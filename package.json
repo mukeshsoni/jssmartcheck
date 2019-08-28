@@ -30,7 +30,7 @@
     "browserify": "14.3.0",
     "chai": "^1.10.0",
     "jest": "^20.0.3",
-    "lodash": "^3.2.0",
+    "lodash": "^4.17.13",
     "mochify": "^2.4.0"
   },
   "dependencies": {
