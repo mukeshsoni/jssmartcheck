@@ -2945,9 +2945,9 @@ resolve@^1.1.3, resolve@^1.1.4, resolve@^1.1.6, resolve@^1.3.2:
   dependencies:
     path-parse "^1.0.5"
 
-ret@^0.1.10:
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.14.tgz#58c636837b12e161f8a380cf081c6a230fd1664e"
+ret@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/ret/-/ret-0.3.1.tgz#74655c3d876a4b6c2576c592431c7b0a84d2b82d"
 
 right-align@^0.1.1:
   version "0.1.3"
